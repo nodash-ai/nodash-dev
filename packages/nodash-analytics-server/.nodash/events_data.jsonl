@@ -1,0 +1,6 @@
+{"event":"test_event","properties":{"test":"value"},"timestamp":"2025-07-04T12:47:48.062Z","source":"test"}
+{"event":"page_view","properties":{"page":"/dashboard","user_id":"user123","referrer":"/"},"timestamp":"2025-07-04T12:48:09.933Z","source":"test"}
+{"event":"user_signup","properties":{"email":"test@example.com","source":"organic"},"timestamp":"2025-07-04T12:48:10.158Z","source":"test"}
+{"event":"user_signup","properties":{"email":"test@example.com","source":"organic","plan":"basic"},"timestamp":"2025-07-04T12:54:25.934Z","source":"test"}
+{"event":"feature_click","properties":{"feature_name":"pricing_cta","user_id":"user123","location":"hero_section"},"timestamp":"2025-07-04T12:54:37.316Z","source":"test"}
+{"event":"implementation_feedback","properties":{"project_type":"nextjs_saas","integration_success":true,"implementation_time":"45_minutes","framework":"nextjs","language":"typescript","complexity":"basic","mcp_tools_used":true,"overall_experience":"excellent"},"timestamp":"2025-07-04T13:03:27.389Z","source":"test"}
