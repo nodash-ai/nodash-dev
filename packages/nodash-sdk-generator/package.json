@@ -9,13 +9,13 @@
     "generate": "node dist/cli.js"
   },
   "dependencies": {
-    "fs-extra": "^11.1.1",
     "chalk": "^5.3.0",
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "fs-extra": "^11.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   }
 }

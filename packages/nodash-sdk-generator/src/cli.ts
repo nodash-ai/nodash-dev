@@ -15,15 +15,15 @@ program
 program
   .command('generate')
   .description('Generate SDK from all server definitions')
-  .option('-s, --servers <path>', 'Path to servers directory', '../../servers')
-  .option('--public-repo <path>', 'Path to public repository', '../../../../nodash')
+  .option('-s, --servers <path>', 'Path to servers directory', '../servers')
+  .option('--sdk-path <path>', 'Path to SDK package', '../nodash-sdk')
   .action(async (options) => {
     try {
       console.log(chalk.blue('🚀 Generating Nodash SDK from server definitions...'));
       
       await generateSDK({
         serversPath: path.resolve(options.servers),
-        publicRepoPath: path.resolve(options.publicRepo)
+        sdkPath: path.resolve(options.sdkPath)
       });
       
       console.log(chalk.green('✅ SDK generation completed successfully!'));
