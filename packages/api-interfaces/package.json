@@ -1,0 +1,34 @@
+{
+  "name": "@nodash/api-interfaces",
+  "version": "1.0.0",
+  "description": "API interface definitions for Nodash analytics platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
+  "keywords": [
+    "analytics",
+    "api",
+    "interfaces",
+    "nodash"
+  ],
+  "author": "Nodash Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nodash/api-interfaces.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+} 
