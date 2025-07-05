@@ -1,0 +1,21 @@
+{
+  "name": "@nodash/sdk-generator",
+  "version": "1.0.0",
+  "description": "Generates Nodash SDK from server API definitions",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "generate": "node dist/cli.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.0.0"
+  }
+}
