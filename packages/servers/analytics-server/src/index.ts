@@ -11,8 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Services
-const storageService = new StorageService();
-const eventsService = new EventsService(storageService);
+const eventsService = new EventsService();
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -50,7 +49,7 @@ app.use('/events', createEventsRouter(eventsService));
 async function startServer() {
   console.log('🚀 Starting Nodash Analytics Server...');
   console.log(`📁 Ensuring data directory exists...`);
-  await storageService.ensureDataDir();
+  await StorageService.ensureDataDir();
   console.log(`📊 Services initialized`);
   
   app.listen(PORT, () => {
