@@ -9,14 +9,17 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces", 
+    "dev": "npm run dev --workspaces",
     "generate-sdk": "cd packages/nodash-sdk-generator && npm run build && node dist/cli.js generate --servers ../servers --sdk-path ../nodash-sdk",
     "publish-packages": "./scripts/publish-packages.sh",
     "install-deps": "npm install && npm install --workspaces"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^30.0.4",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
