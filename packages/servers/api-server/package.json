@@ -1,5 +1,5 @@
 {
-  "name": "@nodash/analytics-server",
+  "name": "@nodash/api-server",
   "version": "1.0.0",
   "description": "Nodash Analytics Server - HTTP server for analytics data storage",
   "type": "module",
