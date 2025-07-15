@@ -4,13 +4,11 @@
   "description": "Nodash development workspace - private servers and infrastructure",
   "private": true,
   "workspaces": [
-    "packages/*",
     "packages/servers/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
     "dev": "npm run dev --workspaces",
-    "generate-sdk": "cd packages/nodash-sdk-generator && npm run build && node dist/cli.js generate --servers ../servers --sdk-path ../nodash-sdk",
     "publish-packages": "./scripts/publish-packages.sh",
     "install-deps": "npm install && npm install --workspaces"
   },
