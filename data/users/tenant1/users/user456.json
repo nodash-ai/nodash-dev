@@ -1,0 +1,12 @@
+{
+  "userId": "user456",
+  "tenantId": "tenant1",
+  "properties": {
+    "email": "user456@example.com",
+    "name": "Jane Smith"
+  },
+  "firstSeen": "2025-07-22T18:39:43.226Z",
+  "lastSeen": "2025-07-22T18:39:43.226Z",
+  "sessionCount": 1,
+  "eventCount": 0
+}
