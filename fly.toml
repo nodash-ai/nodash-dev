@@ -4,7 +4,7 @@
 #
 
 app = 'nodash-dev'
-primary_region = 'lhr'
+primary_region = 'iad'
 
 [build]
 
