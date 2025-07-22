@@ -1,6 +1,10 @@
-# fly.toml app configuration file
-app = "nodash-dev"
-primary_region = "iad"
+# fly.toml app configuration file generated for nodash-dev on 2025-07-22T21:57:43Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'nodash-dev'
+primary_region = 'lhr'
 
 [build]
 
@@ -18,10 +22,10 @@ primary_region = "iad"
 [http_service]
   internal_port = 3001
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"]
+  processes = ['app']
 
 [http_service.concurrency]
   type = "connections"
@@ -42,6 +46,6 @@ primary_region = "iad"
   destination = "/app/data"
 
 [[vm]]
-  memory = "256mb"
-  cpu_kind = "shared"
+  memory = '256mb'
+  cpu_kind = 'shared'
   cpus = 1
