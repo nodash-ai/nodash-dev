@@ -73,9 +73,9 @@ The app includes automatic health checks:
 
 After deployment, your API will be available at:
 ```
-https://nodash-backend.fly.dev/v1/health
-https://nodash-backend.fly.dev/v1/track
-https://nodash-backend.fly.dev/v1/identify
+https://nodash-dev.fly.dev/v1/health
+https://nodash-dev.fly.dev/v1/track
+https://nodash-dev.fly.dev/v1/identify
 ```
 
 ## Configuration

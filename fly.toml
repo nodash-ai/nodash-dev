@@ -1,5 +1,5 @@
 # fly.toml app configuration file
-app = "nodash-backend"
+app = "nodash-dev"
 primary_region = "iad"
 
 [build]
