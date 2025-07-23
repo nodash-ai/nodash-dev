@@ -26,5 +26,10 @@ build/
 .DS_Store
 Thumbs.db
 
-# Nodash data directory
+# Nodash data directories
 .nodash/ 
+data/
+integration-test-data/
+
+# Test artifacts
+test-data/
