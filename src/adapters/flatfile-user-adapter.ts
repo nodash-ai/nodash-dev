@@ -60,7 +60,14 @@ export class FlatFileUserAdapter implements UserAdapter {
     try {
       const filePath = this.getUserFilePath(tenantId, userId);
       const content = await fs.readFile(filePath, 'utf8');
-      return JSON.parse(content) as UserRecord;
+      const parsed = JSON.parse(content) as any;
+      
+      // Convert string dates back to Date objects
+      return {
+        ...parsed,
+        firstSeen: new Date(parsed.firstSeen),
+        lastSeen: new Date(parsed.lastSeen)
+      } as UserRecord;
     } catch {
       return null;
     }

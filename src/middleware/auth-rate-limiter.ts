@@ -38,22 +38,38 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
 
   async validateToken(token: string): Promise<AuthResult> {
     try {
-      // Try JWT token first
-      if (this.jwtSecret && token.startsWith('Bearer ')) {
-        const jwtToken = token.substring(7);
-        const decoded = jwt.verify(jwtToken, this.jwtSecret) as any;
+      // Handle Bearer tokens
+      if (token.startsWith('Bearer ')) {
+        const bearerToken = token.substring(7);
         
-        return {
-          success: true,
-          tenantInfo: {
-            tenantId: decoded.tenantId || decoded.sub,
-            name: decoded.name,
-            rateLimits: decoded.rateLimits
+        // Try JWT token first if JWT secret is available
+        if (this.jwtSecret) {
+          try {
+            const decoded = jwt.verify(bearerToken, this.jwtSecret) as any;
+            return {
+              success: true,
+              tenantInfo: {
+                tenantId: decoded.tenantId || decoded.sub,
+                name: decoded.name,
+                rateLimits: decoded.rateLimits
+              }
+            };
+          } catch {
+            // JWT validation failed, try as API key
           }
-        };
+        }
+        
+        // Try Bearer token as API key
+        const tenantInfo = this.apiKeys.get(bearerToken);
+        if (tenantInfo) {
+          return {
+            success: true,
+            tenantInfo
+          };
+        }
       }
       
-      // Try API key
+      // Try token as direct API key (for x-api-key header)
       const tenantInfo = this.apiKeys.get(token);
       if (tenantInfo) {
         return {

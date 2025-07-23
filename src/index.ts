@@ -118,6 +118,27 @@ class NodashBackend {
       router.validateIdentifyRequest.bind(router),
       (req, res) => identifyHandler.handle(req, res)
     );
+
+    // SDK compatibility routes (without /v1 prefix)
+    this.app.get('/health', (req, res) => healthHandler.handle(req, res));
+    
+    this.app.post('/track',
+      router.attachRequestId.bind(router),
+      authMiddleware,
+      router.enforceTenantHeader.bind(router),
+      rateLimitMiddleware,
+      router.validateTrackRequest.bind(router),
+      (req, res) => trackHandler.handle(req, res)
+    );
+    
+    this.app.post('/identify',
+      router.attachRequestId.bind(router),
+      authMiddleware,
+      router.enforceTenantHeader.bind(router),
+      rateLimitMiddleware,
+      router.validateIdentifyRequest.bind(router),
+      (req, res) => identifyHandler.handle(req, res)
+    );
     
     // Root endpoint
     this.app.get('/', (req, res) => {

@@ -89,10 +89,16 @@ export class ExpressRequestRouter implements RequestRouter {
   enforceTenantHeader(req: Request, res: Response, next: NextFunction): void {
     const tenantId = req.headers[this.tenantHeaderName] as string;
     
+    // If tenant info is already set by auth middleware (from API key), skip header check
+    if ((req as any).tenantInfo) {
+      next();
+      return;
+    }
+    
     if (!tenantId) {
       res.status(400).json({
         error: 'Missing tenant ID',
-        message: `Header '${this.tenantHeaderName}' is required`,
+        message: `Header '${this.tenantHeaderName}' is required when using manual tenant identification`,
         statusCode: 400,
         timestamp: new Date(),
         requestId: (req as any).requestId
