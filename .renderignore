@@ -1,0 +1,65 @@
+# Test files and directories
+test/
+tests/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+coverage/
+.nyc_output/
+
+# Development files
+.nodash/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Build artifacts (will be rebuilt)
+dist/
+build/
+
+# Development dependencies (already excluded by npm ci --production)
+node_modules/.cache/
+node_modules/.vitest/
+
+# Documentation and examples
+docs/
+examples/
+*.md
+!README.md
+
+# Development tools
+.prettierrc
+.eslintrc*
+jest.config.*
+vitest.config.*
+tsconfig.*.json
+!tsconfig.build.json
+
+# Version control
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files (use Render environment variables instead)
+.env*
+!.env.example
+
+# Local data directories (use persistent disk instead)
+data/
+integration-test-data/
+e2e-test-data/
+test-data/
+
+# Deployment files for other platforms
+fly.toml
+Dockerfile
+.dockerignore
+DEPLOY_RENDER.md
+deploy.md

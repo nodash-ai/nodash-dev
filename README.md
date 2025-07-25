@@ -334,7 +334,18 @@ The test suite includes utilities for:
 
 ## Deployment
 
-### Fly.io (Recommended)
+### Render.com (Recommended)
+```bash
+# 1. Fork this repository to your GitHub account
+# 2. Visit https://dashboard.render.com
+# 3. Click "New" → "Blueprint" 
+# 4. Select this repository
+# 5. Render auto-deploys using render.yaml
+
+# See DEPLOY_RENDER.md for complete guide
+```
+
+### Fly.io (Alternative)
 ```bash
 # Install Fly CLI and login
 flyctl auth login

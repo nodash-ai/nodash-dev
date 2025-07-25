@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: nodash-backend
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: node scripts/render-start.js
+    healthCheckPath: /v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: STORE_EVENTS
+        value: flatfile
+      - key: STORE_USERS
+        value: flatfile
+      - key: STORE_RATELIMIT
+        value: memory
+      - key: STORE_DEDUPLICATION
+        value: memory
+      - key: EVENTS_PATH
+        value: ./data/events
+      - key: USERS_PATH
+        value: ./data/users
+      - key: RATE_LIMIT_MAX
+        value: 1000
+      - key: RATE_LIMIT_WINDOW
+        value: 3600
+      - key: DEDUPLICATION_TTL
+        value: 3600
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEMO_API_KEY_TENANT1
+        value: demo-api-key-tenant1
+      - key: DEMO_API_KEY_TENANT2
+        value: demo-api-key-tenant2
+    disk:
+      name: nodash-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+
+databases: []

@@ -1,8 +1,8 @@
-# Use Node.js 18 Alpine for smaller image size
-FROM node:18-alpine
+# Use Node.js 20 Alpine for better compatibility and performance
+FROM node:20-alpine
 
-# Install wget for health checks
-RUN apk add --no-cache wget
+# Install curl for health checks (Render.com prefers curl)
+RUN apk add --no-cache curl
 
 # Set working directory
 WORKDIR /app
@@ -33,12 +33,12 @@ RUN mkdir -p /app/data/events /app/data/users && \
 # Switch to non-root user
 USER nodash
 
-# Expose port
-EXPOSE 3001
+# Expose port (Render.com uses PORT env variable, default to 10000)
+EXPOSE 10000
 
-# Health check
+# Health check compatible with Render.com
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/v1/health || exit 1
+  CMD curl -f http://localhost:${PORT:-10000}/v1/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]
