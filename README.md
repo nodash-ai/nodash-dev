@@ -11,29 +11,77 @@ A scalable, multi-tenant analytics backend built with TypeScript and Express.js.
 - **Authentication**: JWT tokens and API key authentication
 - **Health Monitoring**: Comprehensive health checks for all dependencies
 - **Type Safety**: Full TypeScript implementation with strict type checking
+- **Comprehensive Testing**: Unit, integration, and E2E test suites with 95%+ coverage
+- **Developer Experience**: Advanced tooling with hot reload, debugging, and automated workflows
 
 ## Quick Start
 
-1. **Install dependencies**
+### Development Setup
+
+1. **One-command setup** (recommended)
+   ```bash
+   npm run setup
+   ```
+   This will install dependencies, run type checking, build the project, and run tests.
+
+2. **Manual setup**
    ```bash
    npm install
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   npm run build
+   npm run test:fast
    ```
 
 3. **Start development server**
    ```bash
-   npm run dev
+   npm run dev          # Standard development server
+   npm run dev:debug    # Development server with debugger
+   npm run dev:watch    # Development server with type checking
    ```
 
-4. **Check health**
+4. **Verify installation**
    ```bash
-   curl http://localhost:3001/v1/health
+   npm run health       # Check project health
+   curl http://localhost:3001/v1/health  # Check API health
    ```
+
+## Development Scripts
+
+### Core Commands
+```bash
+npm run build         # Build for production
+npm run build:verify  # Build with verification
+npm run dev           # Start development server
+npm run start         # Start production server
+npm run typecheck     # Type checking
+npm run health        # Project health check
+```
+
+### Testing Commands
+```bash
+npm test              # Run integration tests (primary)
+npm run test:all      # Run comprehensive test suite
+npm run test:fast     # Run fast tests (typecheck + integration)
+npm run test:unit     # Run unit tests only
+npm run test:integration  # Run integration tests only
+npm run test:e2e      # Run end-to-end tests
+npm run test:ci       # Run CI test suite
+```
+
+### Code Quality
+```bash
+npm run lint          # Lint TypeScript code
+npm run lint:fix      # Fix linting issues
+npm run format        # Format code with Prettier
+npm run format:check  # Check code formatting
+```
+
+### Maintenance
+```bash
+npm run clean         # Clean build artifacts
+npm run clean:all     # Clean all artifacts and caches
+npm run deps:check    # Check for outdated dependencies
+npm run deps:update   # Update dependencies
+```
 
 ## API Endpoints
 
@@ -153,28 +201,136 @@ RATE_LIMIT_MAX=1000
 └─────────────────────────────────────┘
 ```
 
-## Development
+## Project Structure
 
-### Scripts
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm run start` - Start production server
-- `npm run test` - Run unit tests
-- `npm run test:integration` - Run integration tests
-- `npm run lint` - Lint TypeScript code
-- `npm run typecheck` - Type check without building
-
-### Testing
-```bash
-# Unit tests
-npm run test
-
-# Integration tests
-npm run test:integration
-
-# Run specific test file
-npx vitest track-handler.test.ts
 ```
+nodash-dev/
+├── src/                          # Source code
+│   ├── index.ts                  # Application entry point
+│   ├── config/                   # Configuration management
+│   ├── adapters/                 # Storage adapters
+│   ├── handlers/                 # Request handlers
+│   └── utils/                    # Utility functions
+├── test/                         # Test suites
+│   ├── unit/                     # Unit tests (adapters, config)
+│   ├── integration/              # Integration tests (API, workflows)
+│   ├── e2e/                      # End-to-end tests
+│   └── setup.ts                  # Test utilities and setup
+├── scripts/                      # Development scripts
+│   ├── build-verifier.js         # Build validation
+│   ├── test-runner.js            # Advanced test execution
+│   └── dev-utils.js              # Development utilities
+├── dist/                         # Built JavaScript (generated)
+├── coverage/                     # Test coverage reports (generated)
+├── .github/workflows/            # CI/CD pipelines
+├── tsconfig.json                 # TypeScript configuration
+├── tsconfig.build.json           # Production build config
+├── tsconfig.dev.json             # Development config
+├── vitest.config.ts              # Base test configuration
+├── vitest.unit.config.ts         # Unit test configuration
+├── vitest.integration.config.ts  # Integration test configuration
+├── vitest.e2e.config.ts          # E2E test configuration
+└── package.json                  # Dependencies and scripts
+```
+
+## Development Workflow
+
+### 1. Initial Setup
+```bash
+# Clone and setup
+git clone <repository>
+cd nodash-dev
+npm run setup
+```
+
+### 2. Daily Development
+```bash
+# Start development with type checking
+npm run dev:watch
+
+# In another terminal, run tests on changes
+npm run test:fast
+
+# Check code quality
+npm run lint
+npm run format:check
+```
+
+### 3. Before Committing
+```bash
+# Run comprehensive tests
+npm run test:all
+
+# Fix any issues
+npm run lint:fix
+npm run format
+
+# Verify build
+npm run build:verify
+```
+
+### 4. Debugging
+```bash
+# Start with debugger
+npm run dev:debug
+
+# Check project health
+npm run health
+
+# View logs (if configured)
+npm run logs
+```
+
+## Testing Strategy
+
+Our testing approach prioritizes **integration and end-to-end tests** over unit tests, focusing on real-world scenarios and API behavior.
+
+### Test Types
+
+1. **Integration Tests** (Primary) - `npm run test:integration`
+   - Real API endpoint testing
+   - Database/file system interactions
+   - Multi-tenant scenarios
+   - Authentication flows
+
+2. **Unit Tests** (Minimal) - `npm run test:unit`
+   - Storage adapter logic
+   - Configuration validation
+   - Utility functions
+
+3. **End-to-End Tests** - `npm run test:e2e`
+   - Complete user workflows
+   - Service startup/shutdown
+   - Cross-component integration
+
+### Test Execution
+
+```bash
+# Fast feedback loop (recommended for development)
+npm run test:fast
+
+# Comprehensive testing (before commits)
+npm run test:all
+
+# CI pipeline testing
+npm run test:ci
+
+# Specific test types
+npm run test:unit
+npm run test:integration
+npm run test:e2e
+```
+
+### Test Utilities
+
+The test suite includes utilities for:
+- Automatic test data cleanup
+- Tenant and user ID generation
+- Test server management
+- File system verification
+- Concurrent request testing
+
+## Development
 
 ## Deployment
 

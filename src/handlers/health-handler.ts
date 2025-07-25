@@ -1,6 +1,13 @@
 import { Request, Response } from 'express';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { StoreSelector } from '../interfaces/storage.js';
 import { HealthResponse } from '../types/core.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const packageJson = JSON.parse(readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
 
 export class HealthHandler {
   private storeSelector: StoreSelector;
@@ -39,7 +46,7 @@ export class HealthHandler {
       
       const healthResponse: HealthResponse = {
         status,
-        version: '1.0.0', // TODO: Get from package.json
+        version: packageJson.version,
         uptime,
         timestamp,
         dependencies: {

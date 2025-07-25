@@ -56,8 +56,13 @@ describe('SDK Core Integration', () => {
       source: 'integration_test'
     });
 
-    // Verify event was stored
-    const eventFile = './integration-test-data/events/tenant1/2025/07/events-2025-07-23.jsonl';
+    // Verify event was stored (check for any event file in the tenant directory)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const eventFile = `./integration-test-data/events/tenant1/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
+    
     const exists = await fs.access(eventFile).then(() => true).catch(() => false);
     expect(exists).toBe(true);
   });

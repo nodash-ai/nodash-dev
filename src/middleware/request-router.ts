@@ -126,7 +126,16 @@ export class ExpressRequestRouter implements RequestRouter {
   }
 
   validateTrackRequest(req: Request, res: Response, next: NextFunction): void {
-    const validation = this.validateSchema(req.body, 'track');
+    // Extract userId from properties if not provided at top level (for backward compatibility)
+    let requestBody = { ...req.body };
+    if (!requestBody.userId && requestBody.properties?.userId) {
+      requestBody.userId = requestBody.properties.userId;
+      // Remove userId from properties to avoid duplication
+      const { userId, ...otherProperties } = requestBody.properties;
+      requestBody.properties = otherProperties;
+    }
+    
+    const validation = this.validateSchema(requestBody, 'track');
     
     if (!validation.success) {
       res.status(400).json({

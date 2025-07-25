@@ -158,6 +158,20 @@ class NodashBackend {
   }
 
   private setupErrorHandling(): void {
+    // JSON parsing error handler
+    this.app.use((error: any, req: any, res: any, next: any) => {
+      if (error instanceof SyntaxError && (error as any).type === 'entity.parse.failed') {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Invalid JSON in request body',
+          statusCode: 400,
+          timestamp: new Date(),
+          requestId: req.requestId,
+        });
+      }
+      next(error);
+    });
+    
     // 404 handler
     this.app.use('*', (req, res) => {
       res.status(404).json({

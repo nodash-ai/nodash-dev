@@ -2,18 +2,18 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    name: 'integration',
+    name: 'unit',
     globals: true,
     environment: 'node',
-    testTimeout: 30000,
-    hookTimeout: 15000,
-    teardownTimeout: 10000,
+    testTimeout: 10000,
+    hookTimeout: 5000,
+    teardownTimeout: 5000,
     setupFiles: ['./test/setup.ts'],
-    include: ['test/integration/**/*.test.ts'],
+    include: ['test/adapters/**/*.test.ts', 'test/config/**/*.test.ts'],
     env: {
       NODE_ENV: 'test'
     },
-    // Performance optimizations
+    // Performance optimizations for unit tests
     pool: 'threads',
     poolOptions: {
       threads: {
@@ -26,7 +26,7 @@ export default defineConfig({
     // Coverage configuration
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json'],
       exclude: [
         'node_modules/**',
         'dist/**',
@@ -34,7 +34,6 @@ export default defineConfig({
         'scripts/**',
         '*.config.*'
       ]
-    },
-
+    }
   }
 });
