@@ -11,30 +11,30 @@ class DevUtils {
 
   async runCommand(command, args, description) {
     console.log(`\n🔧 ${description}...`);
-    
-    return new Promise((resolve) => {
+
+    return new Promise(resolve => {
       const child = spawn(command, args, {
         stdio: 'inherit',
         shell: true,
-        cwd: process.cwd()
+        cwd: process.cwd(),
       });
 
       const startTime = Date.now();
-      
-      child.on('close', (code) => {
+
+      child.on('close', code => {
         const duration = Date.now() - startTime;
         const success = code === 0;
-        
+
         if (success) {
           console.log(`✅ ${description} completed in ${duration}ms`);
         } else {
           console.log(`❌ ${description} failed with code ${code} after ${duration}ms`);
         }
-        
+
         resolve(success);
       });
 
-      child.on('error', (error) => {
+      child.on('error', error => {
         console.error(`❌ Failed to start ${description}:`, error.message);
         resolve(false);
       });
@@ -65,7 +65,7 @@ class DevUtils {
     console.log('  npm run dev        - Start development server');
     console.log('  npm run dev:debug  - Start with debugger');
     console.log('  npm run test:all   - Run comprehensive tests');
-    
+
     return true;
   }
 
@@ -77,8 +77,12 @@ class DevUtils {
       { command: 'rm', args: ['-rf', 'node_modules/.vitest'], description: 'Clean test cache' },
       { command: 'rm', args: ['-rf', 'coverage'], description: 'Clean coverage reports' },
       { command: 'rm', args: ['-rf', 'test-data'], description: 'Clean test data' },
-      { command: 'rm', args: ['-rf', 'integration-test-data'], description: 'Clean integration test data' },
-      { command: 'rm', args: ['-rf', 'e2e-test-data'], description: 'Clean E2E test data' }
+      {
+        command: 'rm',
+        args: ['-rf', 'integration-test-data'],
+        description: 'Clean integration test data',
+      },
+      { command: 'rm', args: ['-rf', 'e2e-test-data'], description: 'Clean E2E test data' },
     ];
 
     let allSuccess = true;
@@ -104,7 +108,11 @@ class DevUtils {
     // Check if package.json exists and is valid
     try {
       const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-      checks.push({ name: 'package.json', status: 'pass', details: `Version: ${packageJson.version}` });
+      checks.push({
+        name: 'package.json',
+        status: 'pass',
+        details: `Version: ${packageJson.version}`,
+      });
     } catch (error) {
       checks.push({ name: 'package.json', status: 'fail', details: error.message });
     }
@@ -137,13 +145,17 @@ class DevUtils {
       const distFiles = fs.readdirSync('dist').length;
       checks.push({ name: 'build artifacts', status: 'pass', details: `${distFiles} files` });
     } else {
-      checks.push({ name: 'build artifacts', status: 'warn', details: 'No build artifacts (run npm run build)' });
+      checks.push({
+        name: 'build artifacts',
+        status: 'warn',
+        details: 'No build artifacts (run npm run build)',
+      });
     }
 
     // Print results
     console.log('Health Check Results:');
     console.log('='.repeat(50));
-    
+
     checks.forEach(check => {
       const icon = check.status === 'pass' ? '✅' : check.status === 'warn' ? '⚠️' : '❌';
       const details = check.details ? ` (${check.details})` : '';
@@ -165,7 +177,7 @@ class DevUtils {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const utils = new DevUtils();
   const command = process.argv[2] || 'help';
-  
+
   switch (command) {
     case 'setup':
       utils.setupDev().catch(error => {
@@ -180,12 +192,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       });
       break;
     case 'health':
-      utils.checkHealth().then(success => {
-        process.exit(success ? 0 : 1);
-      }).catch(error => {
-        console.error('❌ Health check failed:', error);
-        process.exit(1);
-      });
+      utils
+        .checkHealth()
+        .then(success => {
+          process.exit(success ? 0 : 1);
+        })
+        .catch(error => {
+          console.error('❌ Health check failed:', error);
+          process.exit(1);
+        });
       break;
     case 'help':
     default:

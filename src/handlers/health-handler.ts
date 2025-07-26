@@ -22,17 +22,17 @@ export class HealthHandler {
     try {
       const timestamp = new Date();
       const uptime = Math.floor((timestamp.getTime() - this.startTime.getTime()) / 1000);
-      
+
       // Check health of all storage adapters
       const healthChecks = await this.storeSelector.healthCheck();
-      
+
       // Determine overall health status
       const allHealthy = Object.values(healthChecks).every(healthy => healthy);
       const anyUnhealthy = Object.values(healthChecks).some(healthy => !healthy);
-      
+
       let status: 'healthy' | 'degraded' | 'unhealthy';
       let httpStatus: number;
-      
+
       if (allHealthy) {
         status = 'healthy';
         httpStatus = 200;
@@ -43,7 +43,7 @@ export class HealthHandler {
         status = 'degraded';
         httpStatus = 200;
       }
-      
+
       const healthResponse: HealthResponse = {
         status,
         version: packageJson.version,
@@ -55,12 +55,11 @@ export class HealthHandler {
           rateLimiter: healthChecks.rateLimiter ? 'healthy' : 'unhealthy',
         },
       };
-      
+
       res.status(httpStatus).json(healthResponse);
-      
     } catch (error) {
       console.error('Health check error:', error);
-      
+
       res.status(503).json({
         status: 'unhealthy',
         version: '1.0.0',

@@ -11,25 +11,25 @@ export default defineConfig({
     setupFiles: ['./test/e2e/setup.ts'],
     include: ['test/e2e/**/*.test.ts'],
     env: {
-      NODE_ENV: 'test'
+      NODE_ENV: 'test',
     },
     // Run E2E tests sequentially to avoid port conflicts
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true
-      }
+        singleFork: true,
+      },
     },
     // Test isolation
     isolate: true,
     // Coverage configuration (disabled for E2E)
     coverage: {
-      enabled: false
+      enabled: false,
     },
 
     // Retry failed tests once in E2E
     retry: 1,
     // Bail on first failure in E2E to save time
-    bail: 1
-  }
+    bail: 1,
+  },
 });

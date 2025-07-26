@@ -10,7 +10,7 @@ describe('Bearer Token Authentication', () => {
   beforeAll(async () => {
     // Clean up any existing test data
     await fs.rm('./integration-test-data', { recursive: true, force: true });
-    
+
     // Set test environment
     process.env.NODE_ENV = 'test';
     process.env.PORT = TEST_PORT.toString();
@@ -19,15 +19,15 @@ describe('Bearer Token Authentication', () => {
     process.env.STORE_EVENTS = 'flatfile';
     process.env.STORE_USERS = 'flatfile';
     process.env.STORE_RATELIMIT = 'memory';
-    
+
     baseUrl = `http://localhost:${TEST_PORT}`;
-    
+
     // Start server process
     serverProcess = spawn('npm', ['start'], {
       stdio: ['ignore', 'ignore', 'ignore'],
-      env: { ...process.env }
+      env: { ...process.env },
     });
-    
+
     // Wait for server to start
     await new Promise(resolve => setTimeout(resolve, 3000));
   });
@@ -37,7 +37,7 @@ describe('Bearer Token Authentication', () => {
     if (serverProcess) {
       serverProcess.kill();
     }
-    
+
     // Clean up test data
     await fs.rm('./integration-test-data', { recursive: true, force: true });
   });
@@ -52,12 +52,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer demo-api-key-tenant1'
+          Authorization: 'Bearer demo-api-key-tenant1',
         },
         body: JSON.stringify({
           event: 'bearer_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -71,12 +71,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer invalid-api-key'
+          Authorization: 'Bearer invalid-api-key',
         },
         body: JSON.stringify({
           event: 'bearer_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(401);
@@ -89,12 +89,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer demo-api-key-tenant1'
+          Authorization: 'Bearer demo-api-key-tenant1',
         },
         body: JSON.stringify({
           event: 'tenant_extraction_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -111,12 +111,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid'
+          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid',
         },
         body: JSON.stringify({
           event: 'jwt_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(401);
@@ -131,12 +131,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'demo-api-key-tenant1'
+          'x-api-key': 'demo-api-key-tenant1',
         },
         body: JSON.stringify({
           event: 'api_key_header_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -150,12 +150,12 @@ describe('Bearer Token Authentication', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-tenant-id': 'tenant1',
-          'x-api-key': 'demo-api-key-tenant1'
+          'x-api-key': 'demo-api-key-tenant1',
         },
         body: JSON.stringify({
           event: 'manual_tenant_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -171,16 +171,16 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer demo-api-key-tenant1'
+          Authorization: 'Bearer demo-api-key-tenant1',
         },
         body: JSON.stringify({
           event: 'fallback_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
-      // This succeeds because the auth middleware tries JWT first (fails), 
+      // This succeeds because the auth middleware tries JWT first (fails),
       // then falls back to treating it as an API key (succeeds)
     });
 
@@ -189,12 +189,12 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer completely-invalid-token'
+          Authorization: 'Bearer completely-invalid-token',
         },
         body: JSON.stringify({
           event: 'invalid_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(401);
@@ -208,13 +208,13 @@ describe('Bearer Token Authentication', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer demo-api-key-tenant1',
-          'x-tenant-id': 'different-tenant'
+          Authorization: 'Bearer demo-api-key-tenant1',
+          'x-tenant-id': 'different-tenant',
         },
         body: JSON.stringify({
           event: 'tenant_priority_test',
-          properties: { source: 'test' }
-        })
+          properties: { source: 'test' },
+        }),
       });
 
       expect(response.status).toBe(200);
@@ -227,7 +227,7 @@ describe('Bearer Token Authentication', () => {
     it('should allow health checks without authentication', async () => {
       const response = await fetch(`${baseUrl}/health`);
       expect(response.status).toBe(200);
-      
+
       const health = await response.json();
       expect(health.status).toBe('healthy');
     });
@@ -235,10 +235,10 @@ describe('Bearer Token Authentication', () => {
     it('should allow health checks with Bearer authentication', async () => {
       const response = await fetch(`${baseUrl}/health`, {
         headers: {
-          'Authorization': 'Bearer demo-api-key-tenant1'
-        }
+          Authorization: 'Bearer demo-api-key-tenant1',
+        },
       });
-      
+
       expect(response.status).toBe(200);
       const health = await response.json();
       expect(health.status).toBe('healthy');

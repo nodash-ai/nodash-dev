@@ -17,7 +17,7 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
     windowSize: number;
     maxRequests: number;
   };
-  
+
   // In-memory API key store (in production, this would be in a database)
   private apiKeys = new Map<string, TenantInfo>();
 
@@ -25,13 +25,16 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
     rateLimiter: RateLimitAdapter,
     jwtSecret?: string,
     apiKeyHeader: string = 'x-api-key',
-    rateLimitConfig: { windowSize: number; maxRequests: number } = { windowSize: 3600, maxRequests: 1000 }
+    rateLimitConfig: { windowSize: number; maxRequests: number } = {
+      windowSize: 3600,
+      maxRequests: 1000,
+    }
   ) {
     this.jwtSecret = jwtSecret;
     this.apiKeyHeader = apiKeyHeader;
     this.rateLimiter = rateLimiter;
     this.rateLimitConfig = rateLimitConfig;
-    
+
     // Initialize some default API keys for demo purposes
     this.initializeDefaultApiKeys();
   }
@@ -41,7 +44,7 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
       // Handle Bearer tokens
       if (token.startsWith('Bearer ')) {
         const bearerToken = token.substring(7);
-        
+
         // Try JWT token first if JWT secret is available
         if (this.jwtSecret) {
           try {
@@ -51,41 +54,41 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
               tenantInfo: {
                 tenantId: decoded.tenantId || decoded.sub,
                 name: decoded.name,
-                rateLimits: decoded.rateLimits
-              }
+                rateLimits: decoded.rateLimits,
+              },
             };
           } catch {
             // JWT validation failed, try as API key
           }
         }
-        
+
         // Try Bearer token as API key
         const tenantInfo = this.apiKeys.get(bearerToken);
         if (tenantInfo) {
           return {
             success: true,
-            tenantInfo
+            tenantInfo,
           };
         }
       }
-      
+
       // Try token as direct API key (for x-api-key header)
       const tenantInfo = this.apiKeys.get(token);
       if (tenantInfo) {
         return {
           success: true,
-          tenantInfo
+          tenantInfo,
         };
       }
-      
+
       return {
         success: false,
-        error: 'Invalid or expired token'
+        error: 'Invalid or expired token',
       };
     } catch (error) {
       return {
         success: false,
-        error: `Token validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Token validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -97,22 +100,22 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
         this.rateLimitConfig.maxRequests,
         this.rateLimitConfig.windowSize
       );
-      
+
       const rateLimitResult: RateLimitResult = {
         allowed: result.allowed,
-        remaining: result.remaining
+        remaining: result.remaining,
       };
-      
+
       if (!result.allowed) {
         rateLimitResult.retryAfter = Math.ceil((result.resetTime.getTime() - Date.now()) / 1000);
       }
-      
+
       return rateLimitResult;
     } catch (error) {
       // Fail open - allow requests if rate limiter is down
       console.error('Rate limiter error:', error);
       return {
-        allowed: true
+        allowed: true,
       };
     }
   }
@@ -130,39 +133,39 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
     return async (req: Request, res: Response, next: NextFunction) => {
       const authHeader = req.headers.authorization;
       const apiKey = req.headers[this.apiKeyHeader] as string;
-      
+
       const token = authHeader || apiKey;
-      
+
       if (!token) {
         res.status(401).json({
           error: 'Authentication required',
           message: 'Provide either Authorization header or API key',
           statusCode: 401,
           timestamp: new Date(),
-          requestId: req.requestId
+          requestId: req.requestId,
         });
         return;
       }
-      
+
       const authResult = await this.validateToken(token);
-      
+
       if (!authResult.success) {
         res.status(401).json({
           error: 'Authentication failed',
           message: authResult.error,
           statusCode: 401,
           timestamp: new Date(),
-          requestId: req.requestId
+          requestId: req.requestId,
         });
         return;
       }
-      
+
       // Update tenant info with authenticated information
       req.tenantInfo = {
         ...req.tenantInfo,
-        ...authResult.tenantInfo
+        ...authResult.tenantInfo,
       } as TenantInfo;
-      
+
       next();
     };
   }
@@ -173,16 +176,16 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
         next();
         return;
       }
-      
+
       const validatedBody = req.validatedBody as any;
       const rateLimitKey: RateLimitKey = {
         tenantId: req.tenantInfo.tenantId,
         sourceIp: this.getClientIp(req),
-        userId: validatedBody?.userId
+        userId: validatedBody?.userId,
       };
-      
+
       const rateLimitResult = await this.checkRateLimit(rateLimitKey);
-      
+
       if (!rateLimitResult.allowed) {
         res.status(429).json({
           error: 'Rate limit exceeded',
@@ -190,25 +193,25 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
           statusCode: 429,
           timestamp: new Date(),
           requestId: req.requestId,
-          retryAfter: rateLimitResult.retryAfter
+          retryAfter: rateLimitResult.retryAfter,
         });
-        
+
         if (rateLimitResult.retryAfter) {
           res.setHeader('Retry-After', rateLimitResult.retryAfter.toString());
         }
-        
+
         return;
       }
-      
+
       // Set rate limit headers
       res.setHeader('X-RateLimit-Limit', this.rateLimitConfig.maxRequests);
       if (rateLimitResult.remaining !== undefined) {
         res.setHeader('X-RateLimit-Remaining', rateLimitResult.remaining);
       }
-      
+
       // Increment counter after successful check
       await this.incrementCounter(rateLimitKey);
-      
+
       next();
     };
   }
@@ -218,7 +221,7 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
     const realIp = req.headers['x-real-ip'] as string;
     const connectionRemote = (req as any).connection?.remoteAddress;
     const socketRemote = (req as any).socket?.remoteAddress;
-    
+
     const ip = forwardedFor || realIp || connectionRemote || socketRemote || '127.0.0.1';
     return ip.split(',')[0].trim();
   }
@@ -230,25 +233,25 @@ export class JwtAuthRateLimiter implements AuthRateLimiter {
       name: 'Demo Tenant 1',
       rateLimits: {
         requestsPerHour: 1000,
-        requestsPerMinute: 100
-      }
+        requestsPerMinute: 100,
+      },
     });
-    
+
     this.apiKeys.set('demo-api-key-tenant2', {
       tenantId: 'tenant2',
       name: 'Demo Tenant 2',
       rateLimits: {
         requestsPerHour: 5000,
-        requestsPerMinute: 500
-      }
+        requestsPerMinute: 500,
+      },
     });
   }
-  
+
   // Method to add new API keys (for admin use)
   addApiKey(apiKey: string, tenantInfo: TenantInfo): void {
     this.apiKeys.set(apiKey, tenantInfo);
   }
-  
+
   // Method to remove API keys (for admin use)
   removeApiKey(apiKey: string): boolean {
     return this.apiKeys.delete(apiKey);

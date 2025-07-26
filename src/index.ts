@@ -27,50 +27,54 @@ class NodashBackend {
     console.log('🚀 Starting Nodash Analytics Backend...');
     console.log(`🌍 Environment: ${this.config.environment}`);
     console.log(`🔧 Configuration loaded successfully`);
-    
+
     // Initialize storage adapters
     await this.storeSelector.initialize();
-    
+
     // Setup middleware
     this.setupMiddleware();
-    
+
     // Setup routes
     this.setupRoutes();
-    
+
     // Setup error handling
     this.setupErrorHandling();
-    
+
     console.log('✅ Backend initialization complete');
   }
 
   private setupMiddleware(): void {
     // Security middleware
-    this.app.use(helmet({
-      contentSecurityPolicy: false, // Disable CSP for API server
-    }));
-    
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: false, // Disable CSP for API server
+      })
+    );
+
     // CORS
-    this.app.use(cors({
-      origin: this.config.corsOrigins,
-      credentials: true,
-    }));
-    
+    this.app.use(
+      cors({
+        origin: this.config.corsOrigins,
+        credentials: true,
+      })
+    );
+
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-    
+
     // Request logging
     this.app.use((req, res, next) => {
       const start = Date.now();
       const timestamp = new Date().toISOString();
-      
+
       console.log(`[${timestamp}] ${req.method} ${req.url} - Start`);
-      
+
       res.on('finish', () => {
         const duration = Date.now() - start;
         console.log(`[${timestamp}] ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
       });
-      
+
       next();
     });
   }
@@ -83,24 +87,24 @@ class NodashBackend {
       this.config.apiKeyHeader,
       this.config.rateLimits
     );
-    
+
     // Handlers
     const trackHandler = new TrackHandler(this.storeSelector);
     const identifyHandler = new IdentifyHandler(this.storeSelector);
     const healthHandler = new HealthHandler(this.storeSelector);
-    
+
     // Middleware pipeline
     const authMiddleware = authRateLimiter.createAuthMiddleware();
     const rateLimitMiddleware = authRateLimiter.createRateLimitMiddleware();
-    
+
     // Health endpoint (no auth required)
-    this.app.get('/v1/health', 
-      router.attachRequestId.bind(router),
-      (req, res) => healthHandler.handle(req, res)
+    this.app.get('/v1/health', router.attachRequestId.bind(router), (req, res) =>
+      healthHandler.handle(req, res)
     );
-    
+
     // Track endpoint
-    this.app.post('/v1/track',
+    this.app.post(
+      '/v1/track',
       router.attachRequestId.bind(router),
       router.enforceTenantHeader.bind(router),
       authMiddleware,
@@ -108,9 +112,10 @@ class NodashBackend {
       router.validateTrackRequest.bind(router),
       (req, res) => trackHandler.handle(req, res)
     );
-    
+
     // Identify endpoint
-    this.app.post('/v1/identify',
+    this.app.post(
+      '/v1/identify',
       router.attachRequestId.bind(router),
       router.enforceTenantHeader.bind(router),
       authMiddleware,
@@ -121,8 +126,9 @@ class NodashBackend {
 
     // SDK compatibility routes (without /v1 prefix)
     this.app.get('/health', (req, res) => healthHandler.handle(req, res));
-    
-    this.app.post('/track',
+
+    this.app.post(
+      '/track',
       router.attachRequestId.bind(router),
       authMiddleware,
       router.enforceTenantHeader.bind(router),
@@ -130,8 +136,9 @@ class NodashBackend {
       router.validateTrackRequest.bind(router),
       (req, res) => trackHandler.handle(req, res)
     );
-    
-    this.app.post('/identify',
+
+    this.app.post(
+      '/identify',
       router.attachRequestId.bind(router),
       authMiddleware,
       router.enforceTenantHeader.bind(router),
@@ -139,7 +146,7 @@ class NodashBackend {
       router.validateIdentifyRequest.bind(router),
       (req, res) => identifyHandler.handle(req, res)
     );
-    
+
     // Root endpoint
     this.app.get('/', (req, res) => {
       res.json({
@@ -171,7 +178,7 @@ class NodashBackend {
       }
       next(error);
     });
-    
+
     // 404 handler
     this.app.use('*', (req, res) => {
       res.status(404).json({
@@ -181,15 +188,15 @@ class NodashBackend {
         timestamp: new Date(),
       });
     });
-    
+
     // Global error handler
     this.app.use((error: any, req: any, res: any, next: any) => {
       console.error('Unhandled error:', error);
-      
+
       if (res.headersSent) {
         return next(error);
       }
-      
+
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'An unexpected error occurred',
@@ -204,15 +211,21 @@ class NodashBackend {
     return new Promise((resolve, reject) => {
       this.server = this.app.listen(this.config.port, this.config.host, () => {
         console.log(`✅ Nodash Backend running on http://${this.config.host}:${this.config.port}`);
-        console.log(`📊 Data storage: Events=${this.config.stores.events}, Users=${this.config.stores.users}`);
+        console.log(
+          `📊 Data storage: Events=${this.config.stores.events}, Users=${this.config.stores.users}`
+        );
         console.log(`🔗 Health check: http://${this.config.host}:${this.config.port}/v1/health`);
-        console.log(`📝 Track events: POST http://${this.config.host}:${this.config.port}/v1/track`);
-        console.log(`👥 Identify users: POST http://${this.config.host}:${this.config.port}/v1/identify`);
+        console.log(
+          `📝 Track events: POST http://${this.config.host}:${this.config.port}/v1/track`
+        );
+        console.log(
+          `👥 Identify users: POST http://${this.config.host}:${this.config.port}/v1/identify`
+        );
         console.log('');
         console.log('🎯 Server ready to receive requests!');
         resolve();
       });
-      
+
       this.server.on('error', (error: any) => {
         console.error('Server startup error:', error);
         reject(error);
@@ -222,8 +235,8 @@ class NodashBackend {
 
   async stop(): Promise<void> {
     console.log('🔚 Shutting down Nodash Backend...');
-    
-    return new Promise((resolve) => {
+
+    return new Promise(resolve => {
       if (this.server) {
         this.server.close(async () => {
           await this.storeSelector.close();
@@ -240,7 +253,7 @@ class NodashBackend {
 // Start the server
 async function main() {
   const backend = new NodashBackend();
-  
+
   // Graceful shutdown handling
   const shutdown = async (signal: string) => {
     console.log(`\n📡 Received ${signal}, starting graceful shutdown...`);
@@ -252,21 +265,21 @@ async function main() {
       process.exit(1);
     }
   };
-  
+
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
-  
+
   // Handle uncaught exceptions
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     console.error('Uncaught Exception:', error);
     shutdown('UNCAUGHT_EXCEPTION');
   });
-  
+
   process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     shutdown('UNHANDLED_REJECTION');
   });
-  
+
   try {
     await backend.initialize();
     await backend.start();

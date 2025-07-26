@@ -30,7 +30,7 @@ services:
       - key: DEDUPLICATION_TTL
         value: 3600
       - key: CORS_ORIGINS
-        value: "*"
+        value: '*'
       - key: JWT_SECRET
         generateValue: true
       - key: DEMO_API_KEY_TENANT1

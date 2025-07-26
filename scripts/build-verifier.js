@@ -17,16 +17,16 @@ class BuildVerifier {
   async runCommand(command, args, cwd, description) {
     console.log(`\n🔧 ${description}...`);
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const child = spawn(command, args, {
         stdio: 'inherit',
         shell: true,
-        cwd: cwd || process.cwd()
+        cwd: cwd || process.cwd(),
       });
 
       const startTime = Date.now();
 
-      child.on('close', (code) => {
+      child.on('close', code => {
         const duration = Date.now() - startTime;
         const success = code === 0;
 
@@ -35,7 +35,7 @@ class BuildVerifier {
           success,
           duration,
           code,
-          cwd: cwd || process.cwd()
+          cwd: cwd || process.cwd(),
         });
 
         if (success) {
@@ -47,14 +47,14 @@ class BuildVerifier {
         resolve(success);
       });
 
-      child.on('error', (error) => {
+      child.on('error', error => {
         console.error(`❌ Failed to start ${description}:`, error.message);
         this.results.push({
           description,
           success: false,
           duration: Date.now() - startTime,
           error: error.message,
-          cwd: cwd || process.cwd()
+          cwd: cwd || process.cwd(),
         });
         resolve(false);
       });
@@ -140,12 +140,7 @@ class BuildVerifier {
     // 2. Build the service (only if dist doesn't exist)
     let buildSuccess = true;
     if (!fs.existsSync('dist')) {
-      buildSuccess = await this.runCommand(
-        'npx',
-        ['tsc'],
-        process.cwd(),
-        'Build service'
-      );
+      buildSuccess = await this.runCommand('npx', ['tsc'], process.cwd(), 'Build service');
     } else {
       console.log('✅ Build artifacts already exist, skipping build');
     }
@@ -162,7 +157,7 @@ class BuildVerifier {
       this.results.push({
         description: 'Service export verification',
         success: exportsSuccess,
-        duration: 0
+        duration: 0,
       });
     }
 
@@ -209,7 +204,7 @@ class BuildVerifier {
       this.results.push({
         description: 'Package.json validation',
         success: packageValid,
-        duration: 0
+        duration: 0,
       });
 
       if (!packageValid) {
@@ -237,7 +232,7 @@ class BuildVerifier {
       this.results.push({
         description: 'Service syntax validation',
         success: syntaxTest,
-        duration: 0
+        duration: 0,
       });
     }
 
@@ -275,12 +270,15 @@ class BuildVerifier {
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const verifier = new BuildVerifier();
-  verifier.verifyServiceBuild().then(success => {
-    process.exit(success ? 0 : 1);
-  }).catch(error => {
-    console.error('❌ Build verification failed:', error);
-    process.exit(1);
-  });
+  verifier
+    .verifyServiceBuild()
+    .then(success => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch(error => {
+      console.error('❌ Build verification failed:', error);
+      process.exit(1);
+    });
 }
 
 export default BuildVerifier;

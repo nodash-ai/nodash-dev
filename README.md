@@ -19,12 +19,15 @@ A scalable, multi-tenant analytics backend built with TypeScript and Express.js.
 ### Development Setup
 
 1. **One-command setup** (recommended)
+
    ```bash
    npm run setup
    ```
+
    This will install dependencies, run type checking, build the project, and run tests.
 
 2. **Manual setup**
+
    ```bash
    npm install
    npm run build
@@ -32,6 +35,7 @@ A scalable, multi-tenant analytics backend built with TypeScript and Express.js.
    ```
 
 3. **Start development server**
+
    ```bash
    npm run dev          # Standard development server
    npm run dev:debug    # Development server with debugger
@@ -47,6 +51,7 @@ A scalable, multi-tenant analytics backend built with TypeScript and Express.js.
 ## Development Scripts
 
 ### Core Commands
+
 ```bash
 npm run build         # Build for production
 npm run build:verify  # Build with verification
@@ -57,6 +62,7 @@ npm run health        # Project health check
 ```
 
 ### Testing Commands
+
 ```bash
 npm test              # Run integration tests (primary)
 npm run test:all      # Run comprehensive test suite
@@ -68,6 +74,7 @@ npm run test:ci       # Run CI test suite
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint          # Lint TypeScript code
 npm run lint:fix      # Fix linting issues
@@ -76,6 +83,7 @@ npm run format:check  # Check code formatting
 ```
 
 ### Maintenance
+
 ```bash
 npm run clean         # Clean build artifacts
 npm run clean:all     # Clean all artifacts and caches
@@ -86,6 +94,7 @@ npm run deps:update   # Update dependencies
 ## API Endpoints
 
 ### Track Events
+
 ```bash
 curl -X POST http://localhost:3001/v1/track \
   -H "Content-Type: application/json" \
@@ -102,6 +111,7 @@ curl -X POST http://localhost:3001/v1/track \
 ```
 
 ### Identify Users
+
 ```bash
 curl -X POST http://localhost:3001/v1/identify \
   -H "Content-Type: application/json" \
@@ -117,6 +127,7 @@ curl -X POST http://localhost:3001/v1/identify \
 ```
 
 ### Health Check
+
 ```bash
 curl http://localhost:3001/v1/health
 ```
@@ -128,12 +139,14 @@ The backend is configured via environment variables. See `.env.example` for all 
 ### Storage Backends
 
 #### Phase 0 (Current)
+
 - **Events**: `flatfile` - JSON lines files partitioned by date
 - **Users**: `flatfile` - Individual JSON files per user
 - **Rate Limiting**: `memory` - In-memory sliding window
 - **Deduplication**: `memory` - In-memory LRU cache
 
 #### Phase 1 (Future)
+
 - **Events**: `clickhouse`, `bigquery`
 - **Users**: `postgres`, `dynamodb`
 - **Rate Limiting**: `redis`
@@ -141,6 +154,7 @@ The backend is configured via environment variables. See `.env.example` for all 
 ### Multi-Environment Support
 
 #### Development
+
 ```bash
 NODE_ENV=development
 STORE_EVENTS=flatfile
@@ -149,6 +163,7 @@ RATE_LIMIT_MAX=10000
 ```
 
 #### Staging
+
 ```bash
 NODE_ENV=staging
 STORE_EVENTS=flatfile
@@ -157,6 +172,7 @@ RATE_LIMIT_MAX=5000
 ```
 
 #### Production
+
 ```bash
 NODE_ENV=production
 STORE_EVENTS=clickhouse
@@ -168,6 +184,7 @@ RATE_LIMIT_MAX=1000
 ## Architecture
 
 ### Request Flow
+
 1. **Request Router**: Validates JSON schema and extracts tenant info
 2. **Authentication**: Validates JWT tokens or API keys
 3. **Rate Limiting**: Enforces per-tenant rate limits
@@ -176,6 +193,7 @@ RATE_LIMIT_MAX=1000
 6. **Response**: Returns success/error with request ID
 
 ### Storage Architecture
+
 ```
 ┌─────────────────────────────────────┐
 │           HTTP Gateway              │
@@ -236,6 +254,7 @@ nodash-dev/
 ## Development Workflow
 
 ### 1. Initial Setup
+
 ```bash
 # Clone and setup
 git clone <repository>
@@ -244,6 +263,7 @@ npm run setup
 ```
 
 ### 2. Daily Development
+
 ```bash
 # Start development with type checking
 npm run dev:watch
@@ -257,6 +277,7 @@ npm run format:check
 ```
 
 ### 3. Before Committing
+
 ```bash
 # Run comprehensive tests
 npm run test:all
@@ -270,6 +291,7 @@ npm run build:verify
 ```
 
 ### 4. Debugging
+
 ```bash
 # Start with debugger
 npm run dev:debug
@@ -324,6 +346,7 @@ npm run test:e2e
 ### Test Utilities
 
 The test suite includes utilities for:
+
 - Automatic test data cleanup
 - Tenant and user ID generation
 - Test server management
@@ -335,10 +358,11 @@ The test suite includes utilities for:
 ## Deployment
 
 ### Render.com (Recommended)
+
 ```bash
 # 1. Fork this repository to your GitHub account
 # 2. Visit https://dashboard.render.com
-# 3. Click "New" → "Blueprint" 
+# 3. Click "New" → "Blueprint"
 # 4. Select this repository
 # 5. Render auto-deploys using render.yaml
 
@@ -346,6 +370,7 @@ The test suite includes utilities for:
 ```
 
 ### Fly.io (Alternative)
+
 ```bash
 # Install Fly CLI and login
 flyctl auth login
@@ -358,6 +383,7 @@ flyctl deploy
 ```
 
 ### Docker
+
 ```bash
 # Build image
 docker build -t nodash-backend .
@@ -371,7 +397,9 @@ docker run -p 3001:3001 \
 ```
 
 ### Environment Variables
+
 All configuration is done via environment variables. Required variables:
+
 - `NODE_ENV` - Environment (development/staging/production)
 - `STORE_EVENTS` - Events storage backend
 - `STORE_USERS` - Users storage backend
@@ -379,20 +407,27 @@ All configuration is done via environment variables. Required variables:
 ## API Reference
 
 ### Authentication
+
 All endpoints (except `/v1/health`) require authentication via:
+
 - **API Key**: `x-api-key: your-api-key`
 - **JWT Token**: `Authorization: Bearer your-jwt-token`
 
 ### Tenant Isolation
+
 All requests must include tenant identification:
+
 - **Header**: `x-tenant-id: your-tenant-id`
 
 ### Rate Limiting
+
 Rate limits are enforced per (tenant, IP, user) combination:
+
 - **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
 - **Response**: HTTP 429 with `Retry-After` header
 
 ### Error Responses
+
 ```json
 {
   "error": "Error Type",
@@ -414,11 +449,13 @@ Rate limits are enforced per (tenant, IP, user) combination:
 ## Monitoring
 
 ### Health Checks
+
 - **Endpoint**: `GET /v1/health`
 - **Dependencies**: Event store, user store, rate limiter
 - **Status**: `healthy`, `degraded`, `unhealthy`
 
 ### Logging
+
 - **Format**: Structured JSON logs
 - **Context**: Request ID, tenant ID, user ID
 - **Levels**: ERROR, WARN, INFO, DEBUG

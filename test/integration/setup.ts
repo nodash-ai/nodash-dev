@@ -33,24 +33,24 @@ async function startIntegrationServer(): Promise<void> {
         RATE_LIMIT_MAX: '100',
         RATE_LIMIT_WINDOW: '60',
         API_KEY_HEADER: 'x-api-key',
-        CORS_ORIGINS: '*'
-      }
+        CORS_ORIGINS: '*',
+      },
     });
 
     let output = '';
-    
-    integrationServerProcess.stdout?.on('data', (data) => {
+
+    integrationServerProcess.stdout?.on('data', data => {
       output += data.toString();
       if (output.includes('Nodash Backend running on')) {
         resolve();
       }
     });
 
-    integrationServerProcess.stderr?.on('data', (data) => {
+    integrationServerProcess.stderr?.on('data', data => {
       console.error('Integration server error:', data.toString());
     });
 
-    integrationServerProcess.on('error', (error) => {
+    integrationServerProcess.on('error', error => {
       reject(error);
     });
 
@@ -66,13 +66,13 @@ async function startIntegrationServer(): Promise<void> {
 async function stopIntegrationServer(): Promise<void> {
   if (integrationServerProcess && !integrationServerProcess.killed) {
     integrationServerProcess.kill('SIGTERM');
-    
+
     // Wait for graceful shutdown
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       integrationServerProcess!.on('exit', () => {
         resolve();
       });
-      
+
       // Force kill after 5 seconds
       setTimeout(() => {
         if (integrationServerProcess && !integrationServerProcess.killed) {
@@ -98,7 +98,7 @@ beforeAll(async () => {
   process.env.RATE_LIMIT_WINDOW = '60';
   process.env.API_KEY_HEADER = 'x-api-key';
   process.env.CORS_ORIGINS = '*';
-  
+
   // Create integration test data directories
   await fs.mkdir(INTEGRATION_DATA_DIR, { recursive: true });
   await fs.mkdir(INTEGRATION_EVENTS_DIR, { recursive: true });

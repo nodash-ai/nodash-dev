@@ -11,7 +11,7 @@ describe('FlatFileEventAdapter', () => {
   beforeEach(async () => {
     testDir = './test-flatfile-events';
     adapter = new FlatFileEventAdapter(testDir, 'daily');
-    
+
     // Clean up test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
@@ -22,7 +22,7 @@ describe('FlatFileEventAdapter', () => {
 
   afterEach(async () => {
     await adapter.close();
-    
+
     // Clean up test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
@@ -55,7 +55,7 @@ describe('FlatFileEventAdapter', () => {
       const expectedFile = join(testDir, 'tenant-1', '2025', '01', 'events-2025-01-15.jsonl');
       const fileContent = await fs.readFile(expectedFile, 'utf8');
       const savedEvent = JSON.parse(fileContent.trim());
-      
+
       expect(savedEvent.eventId).toBe('event-123');
       expect(savedEvent.tenantId).toBe('tenant-1');
       expect(savedEvent.eventName).toBe('page_view');
@@ -90,12 +90,12 @@ describe('FlatFileEventAdapter', () => {
       const expectedFile = join(testDir, 'tenant-1', '2025', '01', 'events-2025-01-15.jsonl');
       const fileContent = await fs.readFile(expectedFile, 'utf8');
       const lines = fileContent.trim().split('\n');
-      
+
       expect(lines).toHaveLength(2);
-      
+
       const event1 = JSON.parse(lines[0]);
       const event2 = JSON.parse(lines[1]);
-      
+
       expect(event1.eventId).toBe('event-1');
       expect(event2.eventId).toBe('event-2');
     });
@@ -162,8 +162,18 @@ describe('FlatFileEventAdapter', () => {
       const date1File = join(testDir, 'tenant-1', '2025', '01', 'events-2025-01-15.jsonl');
       const date2File = join(testDir, 'tenant-1', '2025', '01', 'events-2025-01-16.jsonl');
 
-      expect(await fs.access(date1File).then(() => true).catch(() => false)).toBe(true);
-      expect(await fs.access(date2File).then(() => true).catch(() => false)).toBe(true);
+      expect(
+        await fs
+          .access(date1File)
+          .then(() => true)
+          .catch(() => false)
+      ).toBe(true);
+      expect(
+        await fs
+          .access(date2File)
+          .then(() => true)
+          .catch(() => false)
+      ).toBe(true);
     });
   });
 
@@ -228,10 +238,10 @@ describe('FlatFileEventAdapter', () => {
     it('should return false when directory is not writable', async () => {
       // Create adapter with invalid path
       const invalidAdapter = new FlatFileEventAdapter('/invalid/path/that/does/not/exist', 'daily');
-      
+
       const isHealthy = await invalidAdapter.healthCheck();
       expect(isHealthy).toBe(false);
-      
+
       await invalidAdapter.close();
     });
   });
@@ -280,7 +290,7 @@ describe('FlatFileEventAdapter', () => {
       expect(result.events).toHaveLength(2);
       expect(result.totalCount).toBe(2);
       expect(result.hasMore).toBe(false);
-      
+
       const eventIds = result.events.map(e => e.eventId);
       expect(eventIds).toContain('event-1');
       expect(eventIds).toContain('event-2');

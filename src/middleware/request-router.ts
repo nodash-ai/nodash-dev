@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  TrackRequest, 
-  IdentifyRequest, 
-  ValidationResult, 
+import {
+  TrackRequest,
+  IdentifyRequest,
+  ValidationResult,
   TenantInfo,
   TrackingEventSchema,
-  IdentifyDataSchema
+  IdentifyDataSchema,
 } from '../types/core.js';
 
 // Request validation schemas
@@ -44,7 +44,7 @@ export class ExpressRequestRouter implements RequestRouter {
   validateSchema(request: any, schema: 'track' | 'identify'): ValidationResult {
     try {
       let validatedData: any;
-      
+
       if (schema === 'track') {
         validatedData = TrackRequestSchema.parse(request);
       } else if (schema === 'identify') {
@@ -52,29 +52,29 @@ export class ExpressRequestRouter implements RequestRouter {
       } else {
         return {
           success: false,
-          error: 'Invalid schema type'
+          error: 'Invalid schema type',
         };
       }
-      
+
       return {
         success: true,
-        data: validatedData
+        data: validatedData,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(err => 
-          `${err.path.join('.')}: ${err.message}`
-        ).join(', ');
-        
+        const errorMessages = error.errors
+          .map(err => `${err.path.join('.')}: ${err.message}`)
+          .join(', ');
+
         return {
           success: false,
-          error: `Validation failed: ${errorMessages}`
+          error: `Validation failed: ${errorMessages}`,
         };
       }
-      
+
       return {
         success: false,
-        error: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -88,40 +88,40 @@ export class ExpressRequestRouter implements RequestRouter {
 
   enforceTenantHeader(req: Request, res: Response, next: NextFunction): void {
     const tenantId = req.headers[this.tenantHeaderName] as string;
-    
+
     // If tenant info is already set by auth middleware (from API key), skip header check
     if ((req as any).tenantInfo) {
       next();
       return;
     }
-    
+
     if (!tenantId) {
       res.status(400).json({
         error: 'Missing tenant ID',
         message: `Header '${this.tenantHeaderName}' is required when using manual tenant identification`,
         statusCode: 400,
         timestamp: new Date(),
-        requestId: (req as any).requestId
+        requestId: (req as any).requestId,
       });
       return;
     }
-    
+
     if (typeof tenantId !== 'string' || tenantId.trim().length === 0) {
       res.status(400).json({
         error: 'Invalid tenant ID',
         message: `Header '${this.tenantHeaderName}' must be a non-empty string`,
         statusCode: 400,
         timestamp: new Date(),
-        requestId: (req as any).requestId
+        requestId: (req as any).requestId,
       });
       return;
     }
-    
+
     // Store tenant info in request for later use
     (req as any).tenantInfo = {
-      tenantId: tenantId.trim()
+      tenantId: tenantId.trim(),
     } as TenantInfo;
-    
+
     next();
   }
 
@@ -134,20 +134,20 @@ export class ExpressRequestRouter implements RequestRouter {
       const { userId, ...otherProperties } = requestBody.properties;
       requestBody.properties = otherProperties;
     }
-    
+
     const validation = this.validateSchema(requestBody, 'track');
-    
+
     if (!validation.success) {
       res.status(400).json({
         error: 'Invalid track request',
         message: validation.error,
         statusCode: 400,
         timestamp: new Date(),
-        requestId: (req as any).requestId
+        requestId: (req as any).requestId,
       });
       return;
     }
-    
+
     // Store validated data
     (req as any).validatedBody = validation.data as TrackRequest;
     next();
@@ -155,18 +155,18 @@ export class ExpressRequestRouter implements RequestRouter {
 
   validateIdentifyRequest(req: Request, res: Response, next: NextFunction): void {
     const validation = this.validateSchema(req.body, 'identify');
-    
+
     if (!validation.success) {
       res.status(400).json({
         error: 'Invalid identify request',
         message: validation.error,
         statusCode: 400,
         timestamp: new Date(),
-        requestId: (req as any).requestId
+        requestId: (req as any).requestId,
       });
       return;
     }
-    
+
     // Store validated data
     (req as any).validatedBody = validation.data as IdentifyRequest;
     next();

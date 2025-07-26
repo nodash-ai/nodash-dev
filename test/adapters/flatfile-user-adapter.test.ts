@@ -11,7 +11,7 @@ describe('FlatFileUserAdapter', () => {
   beforeEach(async () => {
     testDir = './test-flatfile-users';
     adapter = new FlatFileUserAdapter(testDir);
-    
+
     // Clean up test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
@@ -22,7 +22,7 @@ describe('FlatFileUserAdapter', () => {
 
   afterEach(async () => {
     await adapter.close();
-    
+
     // Clean up test directory
     try {
       await fs.rm(testDir, { recursive: true, force: true });
@@ -58,7 +58,7 @@ describe('FlatFileUserAdapter', () => {
       const expectedFile = join(testDir, 'tenant-1', 'users', 'user-123.json');
       const fileContent = await fs.readFile(expectedFile, 'utf8');
       const savedUser = JSON.parse(fileContent);
-      
+
       expect(savedUser.userId).toBe('user-123');
       expect(savedUser.tenantId).toBe('tenant-1');
       expect(savedUser.properties.email).toBe('user@example.com');
@@ -106,11 +106,11 @@ describe('FlatFileUserAdapter', () => {
       const expectedFile = join(testDir, 'tenant-1', 'users', 'user-123.json');
       const fileContent = await fs.readFile(expectedFile, 'utf8');
       const savedUser = JSON.parse(fileContent);
-      
+
       expect(savedUser.properties.name).toBe('John Smith');
       expect(savedUser.properties.plan).toBe('premium');
-      expect(savedUser.sessionCount).toBe(1);  // User adapter preserves existing session count
-      expect(savedUser.eventCount).toBe(5);  // User adapter preserves existing event count
+      expect(savedUser.sessionCount).toBe(1); // User adapter preserves existing session count
+      expect(savedUser.eventCount).toBe(5); // User adapter preserves existing event count
       expect(new Date(savedUser.lastSeen)).toEqual(new Date('2025-01-15T12:00:00Z'));
     });
 
@@ -149,7 +149,7 @@ describe('FlatFileUserAdapter', () => {
       await adapter.upsert(partialUpdate);
 
       const savedUser = await adapter.get('tenant-1', 'user-123');
-      
+
       expect(savedUser).not.toBeNull();
       expect(savedUser!.properties.email).toBe('user@example.com'); // Preserved
       expect(savedUser!.properties.name).toBe('John Smith'); // Updated
@@ -264,7 +264,10 @@ describe('FlatFileUserAdapter', () => {
 
       // Verify file is deleted
       const expectedFile = join(testDir, 'tenant-1', 'users', 'user-123.json');
-      const fileExists = await fs.access(expectedFile).then(() => true).catch(() => false);
+      const fileExists = await fs
+        .access(expectedFile)
+        .then(() => true)
+        .catch(() => false);
       expect(fileExists).toBe(false);
     });
 
@@ -316,11 +319,11 @@ describe('FlatFileUserAdapter', () => {
       const users = await adapter.getBatch('tenant-1', ['user-1', 'user-2']);
 
       expect(users).toHaveLength(2);
-      
+
       const userIds = users.map(u => u.userId);
       expect(userIds).toContain('user-1');
       expect(userIds).toContain('user-2');
-      
+
       users.forEach(user => {
         expect(user.tenantId).toBe('tenant-1');
       });
@@ -330,7 +333,7 @@ describe('FlatFileUserAdapter', () => {
       const users = await adapter.getBatch('tenant-1', ['user-1', 'non-existent', 'user-2']);
 
       expect(users).toHaveLength(2);
-      
+
       const userIds = users.map(u => u.userId);
       expect(userIds).toContain('user-1');
       expect(userIds).toContain('user-2');
@@ -352,10 +355,10 @@ describe('FlatFileUserAdapter', () => {
     it('should return false when directory is not writable', async () => {
       // Create adapter with invalid path
       const invalidAdapter = new FlatFileUserAdapter('/invalid/path/that/does/not/exist');
-      
+
       const isHealthy = await invalidAdapter.healthCheck();
       expect(isHealthy).toBe(false);
-      
+
       await invalidAdapter.close();
     });
   });

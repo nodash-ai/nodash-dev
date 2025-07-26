@@ -9,8 +9,5 @@
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo",
     "rootDir": "."
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

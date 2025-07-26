@@ -192,7 +192,9 @@ describe('ConfigLoader', () => {
         },
       };
 
-      expect(() => ConfigLoader.validate(config)).toThrow('CLICKHOUSE_URL is required when STORE_EVENTS=clickhouse');
+      expect(() => ConfigLoader.validate(config)).toThrow(
+        'CLICKHOUSE_URL is required when STORE_EVENTS=clickhouse'
+      );
     });
 
     it('should throw error for invalid environment', () => {

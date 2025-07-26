@@ -16,10 +16,10 @@ export class FlatFileUserAdapter implements UserAdapter {
     try {
       const filePath = this.getUserFilePath(user.tenantId, user.userId);
       await this.ensureDirectoryExists(dirname(filePath));
-      
+
       let existingUser: UserRecord | null = null;
       let created = true;
-      
+
       try {
         const existingContent = await fs.readFile(filePath, 'utf8');
         existingUser = JSON.parse(existingContent) as UserRecord;
@@ -27,31 +27,31 @@ export class FlatFileUserAdapter implements UserAdapter {
       } catch {
         // File doesn't exist, this is a new user
       }
-      
+
       const updatedUser: UserRecord = {
         userId: user.userId,
         tenantId: user.tenantId,
-        properties: existingUser 
+        properties: existingUser
           ? { ...existingUser.properties, ...user.properties }
           : user.properties,
         firstSeen: existingUser ? existingUser.firstSeen : user.firstSeen,
         lastSeen: user.lastSeen,
         sessionCount: existingUser ? existingUser.sessionCount : user.sessionCount,
-        eventCount: existingUser ? existingUser.eventCount : user.eventCount
+        eventCount: existingUser ? existingUser.eventCount : user.eventCount,
       };
-      
+
       await fs.writeFile(filePath, JSON.stringify(updatedUser, null, 2), 'utf8');
-      
+
       return {
         success: true,
         userId: user.userId,
-        created
+        created,
       };
     } catch (error) {
       return {
         success: false,
         created: false,
-        error: `Failed to upsert user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Failed to upsert user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -61,12 +61,12 @@ export class FlatFileUserAdapter implements UserAdapter {
       const filePath = this.getUserFilePath(tenantId, userId);
       const content = await fs.readFile(filePath, 'utf8');
       const parsed = JSON.parse(content) as any;
-      
+
       // Convert string dates back to Date objects
       return {
         ...parsed,
         firstSeen: new Date(parsed.firstSeen),
-        lastSeen: new Date(parsed.lastSeen)
+        lastSeen: new Date(parsed.lastSeen),
       } as UserRecord;
     } catch {
       return null;
@@ -85,26 +85,26 @@ export class FlatFileUserAdapter implements UserAdapter {
 
   async getBatch(tenantId: string, userIds: string[]): Promise<UserRecord[]> {
     const users: UserRecord[] = [];
-    
+
     for (const userId of userIds) {
       const user = await this.get(tenantId, userId);
       if (user) {
         users.push(user);
       }
     }
-    
+
     return users;
   }
 
   async healthCheck(): Promise<boolean> {
     try {
       await this.ensureDirectoryExists(this.basePath);
-      
+
       // Test write access
       const testFile = join(this.basePath, '.health-check');
       await fs.writeFile(testFile, 'test', 'utf8');
       await fs.unlink(testFile);
-      
+
       return true;
     } catch {
       return false;

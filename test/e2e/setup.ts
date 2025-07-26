@@ -7,7 +7,7 @@ const TEST_PORT = 3002; // Different from dev port to avoid conflicts
 
 export async function startTestServer(): Promise<void> {
   console.log('🚀 Starting test server for E2E tests...');
-  
+
   return new Promise((resolve, reject) => {
     serverProcess = spawn('node', ['dist/index.js'], {
       env: {
@@ -21,14 +21,14 @@ export async function startTestServer(): Promise<void> {
         USERS_PATH: './e2e-test-data/users',
         JWT_SECRET: 'test-secret-key',
         RATE_LIMIT_MAX: '1000',
-        CORS_ORIGINS: 'http://localhost:3000,http://localhost:3001'
+        CORS_ORIGINS: 'http://localhost:3000,http://localhost:3001',
       },
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
 
     let output = '';
-    
-    serverProcess.stdout?.on('data', (data) => {
+
+    serverProcess.stdout?.on('data', data => {
       output += data.toString();
       if (output.includes('Nodash Backend running on')) {
         console.log('✅ Test server started successfully');
@@ -36,11 +36,11 @@ export async function startTestServer(): Promise<void> {
       }
     });
 
-    serverProcess.stderr?.on('data', (data) => {
+    serverProcess.stderr?.on('data', data => {
       console.error('Server error:', data.toString());
     });
 
-    serverProcess.on('error', (error) => {
+    serverProcess.on('error', error => {
       console.error('Failed to start test server:', error);
       reject(error);
     });
@@ -58,14 +58,14 @@ export async function stopTestServer(): Promise<void> {
   if (serverProcess && !serverProcess.killed) {
     console.log('🛑 Stopping test server...');
     serverProcess.kill('SIGTERM');
-    
+
     // Wait for graceful shutdown
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       serverProcess!.on('exit', () => {
         console.log('✅ Test server stopped');
         resolve();
       });
-      
+
       // Force kill after 5 seconds
       setTimeout(5000).then(() => {
         if (serverProcess && !serverProcess.killed) {

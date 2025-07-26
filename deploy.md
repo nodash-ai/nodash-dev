@@ -59,6 +59,7 @@ flyctl ssh console
 ## Health Checks
 
 The app includes automatic health checks:
+
 - **Endpoint**: `GET /v1/health`
 - **Interval**: Every 10 seconds
 - **Timeout**: 2 seconds
@@ -72,6 +73,7 @@ The app includes automatic health checks:
 ## API Usage
 
 After deployment, your API will be available at:
+
 ```
 https://nodash-dev.fly.dev/v1/health
 https://nodash-dev.fly.dev/v1/track

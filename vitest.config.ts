@@ -11,15 +11,15 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     include: ['test/integration/**/*.test.ts'],
     env: {
-      NODE_ENV: 'test'
+      NODE_ENV: 'test',
     },
     // Performance optimizations
     pool: 'threads',
     poolOptions: {
       threads: {
         minThreads: 1,
-        maxThreads: 2
-      }
+        maxThreads: 2,
+      },
     },
     // Test isolation
     isolate: true,
@@ -27,14 +27,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/**',
-        'dist/**',
-        'test/**',
-        'scripts/**',
-        '*.config.*'
-      ]
+      exclude: ['node_modules/**', 'dist/**', 'test/**', 'scripts/**', '*.config.*'],
     },
-
-  }
+  },
 });

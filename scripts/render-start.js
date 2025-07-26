@@ -21,12 +21,12 @@ try {
     mkdirSync(dataDir, { recursive: true });
     console.log('✅ Created data directory:', dataDir);
   }
-  
+
   if (!existsSync(eventsDir)) {
     mkdirSync(eventsDir, { recursive: true });
     console.log('✅ Created events directory:', eventsDir);
   }
-  
+
   if (!existsSync(usersDir)) {
     mkdirSync(usersDir, { recursive: true });
     console.log('✅ Created users directory:', usersDir);
@@ -42,16 +42,16 @@ const server = spawn('node', ['dist/index.js'], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    PORT: process.env.PORT || '10000'
-  }
+    PORT: process.env.PORT || '10000',
+  },
 });
 
-server.on('error', (error) => {
+server.on('error', error => {
   console.error('❌ Failed to start server:', error);
   process.exit(1);
 });
 
-server.on('close', (code) => {
+server.on('close', code => {
   console.log(`🛑 Server process exited with code ${code}`);
   process.exit(code);
 });

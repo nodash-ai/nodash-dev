@@ -25,7 +25,7 @@ describe('End-to-End Workflow Integration', () => {
       userId,
       sessionId,
       source: 'integration_test',
-      plan: 'premium'
+      plan: 'premium',
     });
 
     // Step 2: Identify the user
@@ -33,7 +33,7 @@ describe('End-to-End Workflow Integration', () => {
       email: 'test@example.com',
       name: 'Test User',
       plan: 'premium',
-      signupDate: new Date().toISOString()
+      signupDate: new Date().toISOString(),
     });
 
     // Step 3: Track multiple user actions
@@ -42,7 +42,7 @@ describe('End-to-End Workflow Integration', () => {
       await sdk.track(action, {
         userId,
         sessionId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -52,22 +52,31 @@ describe('End-to-End Workflow Integration', () => {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const eventFile = `./integration-test-data/events/${testConfig.tenantId}/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
-    
-    const exists = await fs.access(eventFile).then(() => true).catch(() => false);
+
+    const exists = await fs
+      .access(eventFile)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(true);
 
     // Step 5: Verify user data was stored
     const userFile = `./integration-test-data/users/${testConfig.tenantId}/users/${userId}.json`;
-    const userExists = await fs.access(userFile).then(() => true).catch(() => false);
+    const userExists = await fs
+      .access(userFile)
+      .then(() => true)
+      .catch(() => false);
     expect(userExists).toBe(true);
 
     // Step 6: Verify event content
     const eventContent = await fs.readFile(eventFile, 'utf-8');
-    const events = eventContent.trim().split('\n').map(line => JSON.parse(line));
-    
+    const events = eventContent
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line));
+
     // Should have 4 events (signup + 3 actions)
     expect(events.length).toBe(4);
-    
+
     // Verify event structure
     events.forEach(event => {
       expect(event).toHaveProperty('eventName');
@@ -93,7 +102,7 @@ describe('End-to-End Workflow Integration', () => {
         sdk.track('concurrent_test', {
           userId,
           requestId: i,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
       );
     }
@@ -107,17 +116,20 @@ describe('End-to-End Workflow Integration', () => {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const eventFile = `./integration-test-data/events/${testConfig.tenantId}/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
-    
+
     const eventContent = await fs.readFile(eventFile, 'utf-8');
-    const events = eventContent.trim().split('\n').map(line => JSON.parse(line));
-    
+    const events = eventContent
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line));
+
     // Filter events for this test
-    const concurrentEvents = events.filter(event => 
-      event.userId === userId && event.eventName === 'concurrent_test'
+    const concurrentEvents = events.filter(
+      event => event.userId === userId && event.eventName === 'concurrent_test'
     );
-    
+
     expect(concurrentEvents.length).toBe(10);
-    
+
     // Verify all request IDs are present and unique
     const requestIds = concurrentEvents.map(event => event.properties.requestId);
     const uniqueRequestIds = [...new Set(requestIds)];
@@ -127,7 +139,7 @@ describe('End-to-End Workflow Integration', () => {
   it('should handle error scenarios gracefully', async () => {
     // Test with invalid tenant (should still not crash)
     const invalidSdk = new NodashSDK('http://localhost:3001', 'invalid-api-key');
-    
+
     // This should fail but not crash the test
     try {
       await invalidSdk.track('error_test', { userId: 'test' });
@@ -144,17 +156,17 @@ describe('End-to-End Workflow Integration', () => {
 
   it('should validate data persistence across service restarts', async () => {
     const userId = `persistent-user-${Date.now()}`;
-    
+
     // Track an event
     await sdk.track('persistence_test', {
       userId,
-      testData: 'should persist across restarts'
+      testData: 'should persist across restarts',
     });
 
     // Identify user
     await sdk.identify(userId, {
       email: 'persistent@example.com',
-      testFlag: true
+      testFlag: true,
     });
 
     // Verify data exists
@@ -164,20 +176,29 @@ describe('End-to-End Workflow Integration', () => {
     const day = String(now.getDate()).padStart(2, '0');
     const eventFile = `./integration-test-data/events/${testConfig.tenantId}/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
     const userFile = `./integration-test-data/users/${testConfig.tenantId}/users/${userId}.json`;
-    
-    const eventExists = await fs.access(eventFile).then(() => true).catch(() => false);
-    const userExists = await fs.access(userFile).then(() => true).catch(() => false);
-    
+
+    const eventExists = await fs
+      .access(eventFile)
+      .then(() => true)
+      .catch(() => false);
+    const userExists = await fs
+      .access(userFile)
+      .then(() => true)
+      .catch(() => false);
+
     expect(eventExists).toBe(true);
     expect(userExists).toBe(true);
 
     // Verify content integrity
     const eventContent = await fs.readFile(eventFile, 'utf-8');
-    const events = eventContent.trim().split('\n').map(line => JSON.parse(line));
-    const persistenceEvent = events.find(event => 
-      event.userId === userId && event.eventName === 'persistence_test'
+    const events = eventContent
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line));
+    const persistenceEvent = events.find(
+      event => event.userId === userId && event.eventName === 'persistence_test'
     );
-    
+
     expect(persistenceEvent).toBeDefined();
     expect(persistenceEvent.properties.testData).toBe('should persist across restarts');
 

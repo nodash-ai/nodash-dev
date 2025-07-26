@@ -46,7 +46,7 @@ export class TestUtils {
       apiKey: this.generateTestApiKey(),
       baseUrl: 'http://localhost:3001',
       eventsPath: TEST_EVENTS_DIR,
-      usersPath: TEST_USERS_DIR
+      usersPath: TEST_USERS_DIR,
     };
   }
 }
@@ -64,7 +64,7 @@ beforeAll(async () => {
   process.env.RATE_LIMIT_MAX = '1000';
   process.env.API_KEY_HEADER = 'x-api-key';
   process.env.JWT_SECRET = 'test-jwt-secret-key';
-  
+
   // Create test data directories
   await TestUtils.createTestDirectories();
 });

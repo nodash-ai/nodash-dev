@@ -14,7 +14,7 @@ describe('SDK Core Integration', () => {
   beforeAll(async () => {
     // Clean and setup test environment
     await fs.rm('./integration-test-data', { recursive: true, force: true });
-    
+
     process.env.NODE_ENV = 'test';
     process.env.PORT = TEST_PORT.toString();
     process.env.EVENTS_PATH = './integration-test-data/events';
@@ -22,16 +22,16 @@ describe('SDK Core Integration', () => {
     process.env.STORE_EVENTS = 'flatfile';
     process.env.STORE_USERS = 'flatfile';
     process.env.STORE_RATELIMIT = 'memory';
-    
+
     baseUrl = `http://localhost:${TEST_PORT}`;
     sdk = new NodashSDK(baseUrl, API_KEY);
-    
+
     // Start server
     serverProcess = spawn('npm', ['start'], {
       stdio: ['ignore', 'ignore', 'ignore'],
-      env: { ...process.env }
+      env: { ...process.env },
     });
-    
+
     // Wait for server startup
     await new Promise(resolve => setTimeout(resolve, 3000));
   });
@@ -53,7 +53,7 @@ describe('SDK Core Integration', () => {
   it('should track events via SDK', async () => {
     await sdk.track('sdk_test_event', {
       userId: 'test_user',
-      source: 'integration_test'
+      source: 'integration_test',
     });
 
     // Verify event was stored (check for any event file in the tenant directory)
@@ -62,20 +62,26 @@ describe('SDK Core Integration', () => {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const eventFile = `./integration-test-data/events/tenant1/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
-    
-    const exists = await fs.access(eventFile).then(() => true).catch(() => false);
+
+    const exists = await fs
+      .access(eventFile)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(true);
   });
 
   it('should identify users via SDK', async () => {
     await sdk.identify('test_user', {
       email: 'test@example.com',
-      name: 'Test User'
+      name: 'Test User',
     });
 
     // Verify user was stored
     const userFile = './integration-test-data/users/tenant1/users/test_user.json';
-    const exists = await fs.access(userFile).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(userFile)
+      .then(() => true)
+      .catch(() => false);
     expect(exists).toBe(true);
 
     const content = await fs.readFile(userFile, 'utf8');
@@ -88,12 +94,12 @@ describe('SDK Core Integration', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         event: 'direct_api_test',
-        properties: { source: 'direct' }
-      })
+        properties: { source: 'direct' },
+      }),
     });
 
     expect(response.status).toBe(200);
@@ -107,12 +113,12 @@ describe('SDK Core Integration', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         userId: 'headerless_user',
-        traits: { test: true }
-      })
+        traits: { test: true },
+      }),
     });
 
     expect(response.status).toBe(200);

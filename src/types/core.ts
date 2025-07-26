@@ -16,25 +16,25 @@ export const IdentifyDataSchema = z.object({
 
 // Backend-specific extensions
 export interface AnalyticsEvent {
-  eventId: string;           // Deduplication key
-  tenantId: string;          // Multi-tenancy namespace
-  userId?: string;           // Optional user association
-  eventName: string;         // Event type identifier
+  eventId: string; // Deduplication key
+  tenantId: string; // Multi-tenancy namespace
+  userId?: string; // Optional user association
+  eventName: string; // Event type identifier
   properties: Record<string, any>; // Event-specific data
-  timestamp: Date;           // Event occurrence time
-  receivedAt: Date;          // Server receipt time
-  sessionId?: string;        // Session tracking
-  deviceId?: string;         // Device fingerprint
+  timestamp: Date; // Event occurrence time
+  receivedAt: Date; // Server receipt time
+  sessionId?: string; // Session tracking
+  deviceId?: string; // Device fingerprint
 }
 
 export interface UserRecord {
-  userId: string;            // Primary identifier
-  tenantId: string;          // Multi-tenancy namespace
+  userId: string; // Primary identifier
+  tenantId: string; // Multi-tenancy namespace
   properties: Record<string, any>; // User attributes
-  firstSeen: Date;           // Initial identification
-  lastSeen: Date;            // Most recent activity
-  sessionCount: number;      // Total sessions
-  eventCount: number;        // Total events
+  firstSeen: Date; // Initial identification
+  lastSeen: Date; // Most recent activity
+  sessionCount: number; // Total sessions
+  eventCount: number; // Total events
 }
 
 export interface TenantInfo {
@@ -57,7 +57,7 @@ export interface RateLimitBucket {
   key: RateLimitKey;
   count: number;
   windowStart: Date;
-  windowSize: number;        // seconds
+  windowSize: number; // seconds
 }
 
 // Validation results
@@ -151,45 +151,52 @@ export interface ErrorResponse {
   requestId?: string;
 }
 
-export type StorageType = 'flatfile' | 'clickhouse' | 'bigquery' | 'postgres' | 'dynamodb' | 'memory' | 'redis';
+export type StorageType =
+  | 'flatfile'
+  | 'clickhouse'
+  | 'bigquery'
+  | 'postgres'
+  | 'dynamodb'
+  | 'memory'
+  | 'redis';
 
 export interface Config {
   // Server configuration
   port: number;
   host: string;
   environment: 'development' | 'staging' | 'production';
-  
+
   // Security
   jwtSecret?: string;
   apiKeyHeader: string;
   corsOrigins: string[];
-  
+
   // Storage configuration
   stores: {
     events: StorageType;
     users: StorageType;
     rateLimits: StorageType;
   };
-  
+
   // File storage paths
   paths: {
     events: string;
     users: string;
   };
-  
+
   // Database URLs
   urls: {
     clickhouse?: string;
     postgres?: string;
     redis?: string;
   };
-  
+
   // Rate limiting
   rateLimits: {
-    windowSize: number;      // seconds
-    maxRequests: number;     // requests per window
+    windowSize: number; // seconds
+    maxRequests: number; // requests per window
   };
-  
+
   // Observability
   observability: {
     enableTracing: boolean;
