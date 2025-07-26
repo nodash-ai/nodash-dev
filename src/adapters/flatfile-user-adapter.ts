@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { UserAdapter } from '../interfaces/storage.js';
-import { UserRecord, UpsertResult } from '../types/core.js';
+import { UserRecord, UpsertResult, UserQueryFilter, UserQueryResult } from '../types/core.js';
 
 export class FlatFileUserAdapter implements UserAdapter {
   private basePath: string;
@@ -108,6 +108,126 @@ export class FlatFileUserAdapter implements UserAdapter {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  async query(filter: UserQueryFilter): Promise<UserQueryResult> {
+    try {
+      const users: UserRecord[] = [];
+      const tenantPath = this.tenantIsolation 
+        ? join(this.basePath, filter.tenantId, 'users')
+        : join(this.basePath, 'users');
+
+      try {
+        const files = await fs.readdir(tenantPath);
+        
+        for (const file of files) {
+          if (file.endsWith('.json')) {
+            try {
+              const filePath = join(tenantPath, file);
+              const content = await fs.readFile(filePath, 'utf8');
+              const parsed = JSON.parse(content) as any;
+              
+              const user: UserRecord = {
+                ...parsed,
+                firstSeen: new Date(parsed.firstSeen),
+                lastSeen: new Date(parsed.lastSeen),
+              };
+
+              // Apply filters
+              if (filter.userId && user.userId !== filter.userId) continue;
+              if (filter.activeSince && user.lastSeen < filter.activeSince) continue;
+              if (filter.activeUntil && user.firstSeen > filter.activeUntil) continue;
+              
+              // Apply property filters
+              if (filter.properties) {
+                let matches = true;
+                for (const [key, value] of Object.entries(filter.properties)) {
+                  if (user.properties[key] !== value) {
+                    matches = false;
+                    break;
+                  }
+                }
+                if (!matches) continue;
+              }
+
+              users.push(user);
+            } catch (parseError) {
+              console.warn(`Failed to parse user file: ${file}`, parseError);
+            }
+          }
+        }
+      } catch (dirError) {
+        // Directory doesn't exist, return empty result
+        return {
+          users: [],
+          totalCount: 0,
+          hasMore: false,
+          pagination: {
+            limit: filter.limit || 100,
+            offset: filter.offset || 0,
+          },
+          executionTime: 0,
+        };
+      }
+
+      // Apply sorting
+      if (filter.sortBy) {
+        users.sort((a, b) => {
+          let aValue: any;
+          let bValue: any;
+
+          switch (filter.sortBy) {
+            case 'firstSeen':
+              aValue = a.firstSeen;
+              bValue = b.firstSeen;
+              break;
+            case 'lastSeen':
+              aValue = a.lastSeen;
+              bValue = b.lastSeen;
+              break;
+            case 'eventCount':
+              aValue = a.eventCount;
+              bValue = b.eventCount;
+              break;
+            case 'sessionCount':
+              aValue = a.sessionCount;
+              bValue = b.sessionCount;
+              break;
+            default:
+              return 0;
+          }
+
+          if (aValue < bValue) {
+            return filter.sortOrder === 'desc' ? 1 : -1;
+          }
+          if (aValue > bValue) {
+            return filter.sortOrder === 'desc' ? -1 : 1;
+          }
+          return 0;
+        });
+      }
+
+      // Apply pagination
+      const offset = filter.offset || 0;
+      const limit = filter.limit || 100;
+      const paginatedUsers = users.slice(offset, offset + limit);
+
+      return {
+        users: paginatedUsers,
+        totalCount: users.length,
+        hasMore: offset + limit < users.length,
+        pagination: {
+          limit,
+          offset,
+          ...(offset + limit < users.length ? { nextOffset: offset + limit } : {}),
+        },
+        executionTime: 0,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to query users: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

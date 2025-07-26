@@ -93,20 +93,101 @@ export interface UpsertResult {
   error?: string;
 }
 
+// Query interfaces
+export interface QueryOptions {
+  // Filtering
+  eventTypes?: string[];
+  userId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  properties?: Record<string, any>;
+  
+  // Sorting
+  sortBy?: 'timestamp' | 'eventName' | 'userId';
+  sortOrder?: 'asc' | 'desc';
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Output formatting
+  format?: 'json' | 'table' | 'csv';
+}
+
+export interface UserQueryOptions {
+  // Filtering
+  userId?: string;
+  activeSince?: Date;
+  activeUntil?: Date;
+  properties?: Record<string, any>;
+  
+  // Sorting
+  sortBy?: 'firstSeen' | 'lastSeen' | 'eventCount' | 'sessionCount';
+  sortOrder?: 'asc' | 'desc';
+  
+  // Pagination
+  limit?: number;
+  offset?: number;
+  
+  // Output formatting
+  format?: 'json' | 'table' | 'csv';
+}
+
 export interface QueryFilter {
   tenantId: string;
   startTime?: Date;
   endTime?: Date;
   eventName?: string;
+  eventTypes?: string[];
   userId?: string;
+  properties?: Record<string, any>;
   limit?: number;
   offset?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface UserQueryFilter {
+  tenantId: string;
+  userId?: string;
+  activeSince?: Date;
+  activeUntil?: Date;
+  properties?: Record<string, any>;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginationInfo {
+  limit: number;
+  offset: number;
+  nextOffset?: number;
 }
 
 export interface QueryResult {
   events: AnalyticsEvent[];
   totalCount: number;
   hasMore: boolean;
+  pagination: PaginationInfo;
+  executionTime: number;
+}
+
+export interface UserQueryResult {
+  users: UserRecord[];
+  totalCount: number;
+  hasMore: boolean;
+  pagination: PaginationInfo;
+  executionTime: number;
+}
+
+export interface QueryError {
+  error: string;
+  message: string;
+  code: 'INVALID_FILTER' | 'TIMEOUT' | 'LIMIT_EXCEEDED' | 'STORAGE_ERROR';
+  details?: Record<string, any>;
+  timestamp: Date;
+  requestId?: string;
 }
 
 export interface ExportResult {

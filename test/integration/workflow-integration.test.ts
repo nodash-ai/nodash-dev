@@ -10,10 +10,10 @@ describe('End-to-End Workflow Integration', () => {
 
   beforeAll(async () => {
     testConfig = TestUtils.getTestConfig();
-    // Override the tenant ID to match the demo API key
+    // Use hardcoded tenant ID that matches the demo API key
     testConfig.tenantId = 'tenant1';
     // Use the hardcoded demo API key that the server recognizes
-    sdk = new NodashSDK(getIntegrationServerUrl(), 'demo-api-key-tenant1');
+    sdk = new NodashSDK(getIntegrationServerUrl(), 'demo-api-key-tenant1', testConfig.tenantId);
   });
 
   it('should handle complete user journey with events and identification', async () => {
@@ -68,11 +68,18 @@ describe('End-to-End Workflow Integration', () => {
     expect(userExists).toBe(true);
 
     // Step 6: Verify event content
+    // Add a small delay to ensure file is fully written
+    await new Promise(resolve => setTimeout(resolve, 100));
     const eventContent = await fs.readFile(eventFile, 'utf-8');
-    const events = eventContent
+    const allEvents = eventContent
       .trim()
       .split('\n')
       .map(line => JSON.parse(line));
+
+    // Filter events by session ID to only get events from this test run
+    const events = allEvents.filter(event => 
+      event.properties && event.properties.sessionId === sessionId
+    );
 
     // Should have 4 events (signup + 3 actions)
     expect(events.length).toBe(4);

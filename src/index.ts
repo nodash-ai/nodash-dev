@@ -10,6 +10,8 @@ import { JwtAuthRateLimiter } from './middleware/auth-rate-limiter.js';
 import { TrackHandler } from './handlers/track-handler.js';
 import { IdentifyHandler } from './handlers/identify-handler.js';
 import { HealthHandler } from './handlers/health-handler.js';
+import { QueryHandler } from './handlers/query-handler.js';
+import { QueryService } from './services/query-service.js';
 
 class NodashBackend {
   private app: express.Application;
@@ -92,6 +94,8 @@ class NodashBackend {
     const trackHandler = new TrackHandler(this.storeSelector);
     const identifyHandler = new IdentifyHandler(this.storeSelector);
     const healthHandler = new HealthHandler(this.storeSelector);
+    const queryService = new QueryService(this.storeSelector);
+    const queryHandler = new QueryHandler(queryService);
 
     // Middleware pipeline
     const authMiddleware = authRateLimiter.createAuthMiddleware();
@@ -122,6 +126,25 @@ class NodashBackend {
       rateLimitMiddleware,
       router.validateIdentifyRequest.bind(router),
       (req, res) => identifyHandler.handle(req, res)
+    );
+
+    // Query endpoints
+    this.app.get(
+      '/v1/events/query',
+      router.attachRequestId.bind(router),
+      router.enforceTenantHeader.bind(router),
+      authMiddleware,
+      rateLimitMiddleware,
+      (req, res) => queryHandler.handleEventQuery(req, res)
+    );
+
+    this.app.get(
+      '/v1/users/query',
+      router.attachRequestId.bind(router),
+      router.enforceTenantHeader.bind(router),
+      authMiddleware,
+      rateLimitMiddleware,
+      (req, res) => queryHandler.handleUserQuery(req, res)
     );
 
     // SDK compatibility routes (without /v1 prefix)
@@ -157,6 +180,8 @@ class NodashBackend {
           health: '/v1/health',
           track: 'POST /v1/track',
           identify: 'POST /v1/identify',
+          queryEvents: 'GET /v1/events/query',
+          queryUsers: 'GET /v1/users/query',
         },
         documentation: 'https://docs.nodash.ai',
         timestamp: new Date(),

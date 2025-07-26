@@ -82,6 +82,8 @@ export class FlatFileEventAdapter implements EventAdapter {
   }
 
   async query(filter: QueryFilter): Promise<QueryResult> {
+    const startTime = Date.now();
+    
     try {
       const events: AnalyticsEvent[] = [];
       const filePaths = await this.getFilePathsForDateRange(
@@ -106,9 +108,22 @@ export class FlatFileEventAdapter implements EventAdapter {
 
               // Apply filters
               if (filter.eventName && event.eventName !== filter.eventName) continue;
+              if (filter.eventTypes && filter.eventTypes.length > 0 && !filter.eventTypes.includes(event.eventName)) continue;
               if (filter.userId && event.userId !== filter.userId) continue;
               if (filter.startTime && event.timestamp < filter.startTime) continue;
               if (filter.endTime && event.timestamp > filter.endTime) continue;
+              
+              // Apply property filters
+              if (filter.properties) {
+                let matches = true;
+                for (const [key, value] of Object.entries(filter.properties)) {
+                  if (event.properties[key] !== value) {
+                    matches = false;
+                    break;
+                  }
+                }
+                if (!matches) continue;
+              }
 
               events.push(event);
             } catch (parseError) {
@@ -120,18 +135,59 @@ export class FlatFileEventAdapter implements EventAdapter {
         }
       }
 
-      // Sort by timestamp descending
-      events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      // Apply sorting
+      if (filter.sortBy) {
+        events.sort((a, b) => {
+          let aValue: any;
+          let bValue: any;
+
+          switch (filter.sortBy) {
+            case 'timestamp':
+              aValue = a.timestamp;
+              bValue = b.timestamp;
+              break;
+            case 'eventName':
+              aValue = a.eventName;
+              bValue = b.eventName;
+              break;
+            case 'userId':
+              aValue = a.userId || '';
+              bValue = b.userId || '';
+              break;
+            default:
+              return 0;
+          }
+
+          if (aValue < bValue) {
+            return filter.sortOrder === 'desc' ? 1 : -1;
+          }
+          if (aValue > bValue) {
+            return filter.sortOrder === 'desc' ? -1 : 1;
+          }
+          return 0;
+        });
+      } else {
+        // Default sort by timestamp descending
+        events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      }
 
       // Apply pagination
       const offset = filter.offset || 0;
       const limit = filter.limit || 100;
       const paginatedEvents = events.slice(offset, offset + limit);
 
+      const executionTime = Date.now() - startTime;
+
       return {
         events: paginatedEvents,
         totalCount: events.length,
         hasMore: offset + limit < events.length,
+        pagination: {
+          limit,
+          offset,
+          ...(offset + limit < events.length ? { nextOffset: offset + limit } : {}),
+        },
+        executionTime,
       };
     } catch (error) {
       throw new Error(

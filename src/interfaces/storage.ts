@@ -6,6 +6,8 @@ import {
   UpsertResult,
   QueryFilter,
   QueryResult,
+  UserQueryFilter,
+  UserQueryResult,
   ExportResult,
 } from '../types/core.js';
 
@@ -61,6 +63,11 @@ export interface UserAdapter {
    * Get multiple users by IDs
    */
   getBatch(tenantId: string, userIds: string[]): Promise<UserRecord[]>;
+
+  /**
+   * Query users based on filters
+   */
+  query(filter: UserQueryFilter): Promise<UserQueryResult>;
 
   /**
    * Check if the user store is healthy

@@ -10,7 +10,7 @@ const INTEGRATION_USERS_DIR = join(INTEGRATION_DATA_DIR, 'users');
 
 // Shared integration test server
 let integrationServerProcess: ChildProcess | null = null;
-const INTEGRATION_TEST_PORT = 3001;
+const INTEGRATION_TEST_PORT = 3001 + Math.floor(Math.random() * 1000);
 
 export function getIntegrationServerUrl(): string {
   return `http://localhost:${INTEGRATION_TEST_PORT}`;
@@ -112,20 +112,40 @@ afterAll(async () => {
   // Stop integration server
   await stopIntegrationServer();
 
-  // Clean up integration test data with retry
-  let retries = 3;
+  // Wait longer for any file handles to be released
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // More aggressive cleanup with multiple strategies
+  let retries = 10;
   while (retries > 0) {
     try {
+      // First try to remove with force
       await fs.rm(INTEGRATION_DATA_DIR, { recursive: true, force: true });
       break;
-    } catch (error) {
+    } catch (error: any) {
       retries--;
       if (retries === 0) {
-        console.warn('Failed to clean up integration test data:', error);
+        console.warn('Failed to clean up integration test data after all retries:', error);
+        // Try one last time with different approach - don't fail the test
+        try {
+          // Try to remove contents first, then directory
+          const entries = await fs.readdir(INTEGRATION_DATA_DIR, { withFileTypes: true });
+          for (const entry of entries) {
+            const fullPath = join(INTEGRATION_DATA_DIR, entry.name);
+            if (entry.isDirectory()) {
+              await fs.rm(fullPath, { recursive: true, force: true });
+            } else {
+              await fs.unlink(fullPath);
+            }
+          }
+          await fs.rmdir(INTEGRATION_DATA_DIR);
+        } catch (finalError) {
+          console.warn('Final cleanup attempt failed, but continuing:', finalError);
+        }
       } else {
-        // Wait a bit before retrying
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait progressively longer before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000 + (10 - retries) * 200));
       }
     }
   }
-}, 10000);
+}, 20000);
