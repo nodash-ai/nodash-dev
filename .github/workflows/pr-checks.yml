@@ -27,24 +27,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run TypeScript checks (excluding tests)
-        run: npx tsc --project tsconfig.json --noEmit
+      - name: Run TypeScript checks across all workspaces
+        run: npm run typecheck:all
 
-      - name: Run build verification
-        run: node scripts/build-verifier.js
-        if: hashFiles('scripts/build-verifier.js') != ''
+      - name: Run build verification for API service
+        run: npm run build --workspace=services/api-service && node services/api-service/scripts/build-verifier.js
+        if: hashFiles('services/api-service/scripts/build-verifier.js') != ''
 
-      - name: Run unit tests
-        run: npm run test:unit
-        if: hashFiles('test/adapters/**/*.test.ts') != '' || hashFiles('test/config/**/*.test.ts') != ''
+      - name: Run unit tests across all workspaces
+        run: npm run test:unit:all
 
-      - name: Run integration tests
-        run: npm run test:integration
-        if: hashFiles('test/integration/**/*.test.ts') != ''
+      - name: Run integration tests across all workspaces
+        run: npm run test:integration:all
 
-      - name: Run E2E tests
-        run: npm run test:e2e
-        if: hashFiles('vitest.e2e.config.ts') != ''
+      - name: Run E2E tests for API service
+        run: npm run test:e2e --workspace=services/api-service
+        if: hashFiles('services/api-service/vitest.e2e.config.ts') != ''
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -73,22 +71,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check code formatting
-        run: |
-          if [ -f ".prettierrc" ]; then
-            npx prettier --check "src/**/*.{ts,js,json}" "test/**/*.{ts,js,json}" || echo "⚠️ Prettier formatting issues found (non-blocking)"
-          else
-            echo "No prettier config found, skipping format check"
-          fi
+      - name: Check code formatting across all workspaces
+        run: npm run format:check:all
         continue-on-error: true
 
-      - name: Run linting
-        run: |
-          if [ -f "eslint.config.js" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
-            npm run lint
-          else
-            echo "No eslint config found, skipping lint check"
-          fi
+      - name: Run linting across all workspaces
+        run: npm run lint:all
 
   security:
     name: Security Audit
@@ -139,12 +127,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build service
-        run: npm run build
+      - name: Build all services
+        run: npm run build:all
 
-      - name: Verify builds
-        run: node scripts/build-verifier.js
-        if: hashFiles('scripts/build-verifier.js') != ''
+      - name: Verify API service build
+        run: node services/api-service/scripts/build-verifier.js
+        if: hashFiles('services/api-service/scripts/build-verifier.js') != ''
 
   comprehensive:
     name: Comprehensive Test Suite
@@ -165,13 +153,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run comprehensive test suite
-        run: npm run test:ci
-        if: hashFiles('scripts/test-runner.js') != ''
+      - name: Run comprehensive test suite for API service
+        run: npm run test:ci --workspace=services/api-service
+        if: hashFiles('services/api-service/test-runner.js') != ''
 
       - name: Fallback comprehensive tests
-        run: npm run ci
-        if: hashFiles('scripts/test-runner.js') == ''
+        run: npm run ci --workspace=services/api-service
+        if: hashFiles('services/api-service/test-runner.js') == ''
 
       - name: Generate test report
         run: |

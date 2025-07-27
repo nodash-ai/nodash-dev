@@ -26,10 +26,26 @@ build/
 .DS_Store
 Thumbs.db
 
+# Monorepo patterns
+**/node_modules/
+**/dist/
+**/build/
+**/.env
+**/.env.local
+
 # Nodash data directories
 .nodash/ 
 data/
 integration-test-data/
+**/data/
+**/integration-test-data/
 
 # Test artifacts
 test-data/
+**/test-data/
+coverage/
+**/coverage/
+
+# Vitest cache
+.vitest/
+**/.vitest/

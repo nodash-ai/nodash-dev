@@ -15,12 +15,12 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@nodash/*": ["packages/*/src", "services/*/src", "apps/*/src"]
+      "@nodash/*": ["../../packages/*/src", "../*/src"]
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
     "noEmit": false
   },
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/test/**/*"],
-  "include": ["services/*/src/**/*", "apps/*/src/**/*", "packages/*/src/**/*", "tools/*/src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/test/**/*"]
 }

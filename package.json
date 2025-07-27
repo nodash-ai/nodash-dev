@@ -1,79 +1,45 @@
 {
-  "name": "@nodash/backend",
+  "name": "@nodash/monorepo",
   "version": "1.0.0",
-  "description": "Nodash Analytics Backend - Scalable analytics platform with adapter-based storage",
+  "description": "Nodash Analytics Platform - Monorepo for all services and applications",
   "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "nodash-backend": "dist/index.js"
-  },
+  "private": true,
+  "workspaces": [
+    "services/*",
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
-    "build:verify": "npm run build && node scripts/build-verifier.js",
-    "dev": "nodemon --exec 'node --loader ts-node/esm src/index.ts'",
-    "start": "node dist/index.js",
-    "clean": "rm -rf dist",
-    "test": "npm run test:integration",
-    "test:all": "node scripts/test-runner.js all",
-    "test:fast": "node scripts/test-runner.js fast",
-    "test:unit": "vitest run --config vitest.unit.config.ts",
-    "test:integration": "vitest test/integration --run",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts",
-    "test:ci": "node scripts/test-runner.js ci",
-    "typecheck": "tsc --project tsconfig.dev.json --noEmit",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.{ts,js,json}\" \"test/**/*.{ts,js,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,js,json}\" \"test/**/*.{ts,js,json}\"",
-    "dev:debug": "nodemon --exec 'node --inspect --loader ts-node/esm src/index.ts'",
-    "dev:watch": "concurrently \"npm run typecheck -- --watch\" \"npm run dev\"",
-    "deps:check": "npm outdated",
-    "deps:update": "npm update",
-    "clean:all": "npm run clean && rm -rf node_modules/.vitest && rm -rf coverage",
-    "setup": "node scripts/dev-utils.js setup",
-    "health": "node scripts/dev-utils.js health",
-    "ci": "npm run typecheck && npm run test:unit && npm run test:integration",
-    "render:build": "npm ci && npm run build",
-    "render:start": "npm start"
+    "build:all": "npm run build --workspaces --if-present",
+    "test:all": "npm run test --workspaces --if-present",
+    "test:unit:all": "npm run test:unit --workspaces --if-present",
+    "test:integration:all": "npm run test:integration --workspaces --if-present",
+    "lint:all": "npm run lint --workspaces --if-present",
+    "lint:fix:all": "npm run lint:fix --workspaces --if-present",
+    "format:all": "npm run format --workspaces --if-present",
+    "format:check:all": "npm run format:check --workspaces --if-present",
+    "typecheck:all": "npm run typecheck --workspaces --if-present",
+    "clean:all": "npm run clean --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=services/api-service",
+    "build:api": "npm run build --workspace=services/api-service",
+    "test:api": "npm run test --workspace=services/api-service"
   },
   "keywords": [
     "analytics",
-    "backend",
+    "monorepo",
     "nodash",
     "multi-tenant"
   ],
   "author": "Nodash",
   "license": "MIT",
-  "dependencies": {
-    "@nodash/sdk": "^0.1.5",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "uuid": "^9.0.1",
-    "zod": "^3.22.4"
-  },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20.0.0",
-    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vitest/coverage-v8": "^3.2.4",
-    "concurrently": "^8.0.0",
     "eslint": "^8.57.0",
-    "nodemon": "^3.1.10",
     "prettier": "^3.0.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.0.0",
-    "vitest": "^3.2.4"
+    "typescript": "^5.0.0"
   },
-  "files": [
-    "dist/**/*",
-    "README.md"
-  ],
   "engines": {
     "node": ">=20.19.0"
   }

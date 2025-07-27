@@ -1,465 +1,244 @@
-# Nodash Analytics Backend
+# Nodash Analytics Platform - Monorepo
 
-A scalable, multi-tenant analytics backend built with TypeScript and Express.js. Features adapter-based storage architecture for seamless scaling from flat files to distributed databases.
+A scalable, multi-tenant analytics platform built with Node.js and TypeScript. This monorepo contains all services, applications, and shared libraries for the Nodash ecosystem.
 
-## Features
-
-- **Multi-tenant Support**: Complete tenant isolation with configurable rate limiting
-- **Adapter-based Storage**: Seamlessly switch between storage backends via configuration
-- **Event Deduplication**: Exactly-once processing with configurable TTL
-- **Rate Limiting**: Sliding window rate limiting per tenant/IP/user
-- **Authentication**: JWT tokens and API key authentication
-- **Health Monitoring**: Comprehensive health checks for all dependencies
-- **Type Safety**: Full TypeScript implementation with strict type checking
-- **Comprehensive Testing**: Unit, integration, and E2E test suites with 95%+ coverage
-- **Developer Experience**: Advanced tooling with hot reload, debugging, and automated workflows
-
-## Quick Start
-
-### Development Setup
-
-1. **One-command setup** (recommended)
-
-   ```bash
-   npm run setup
-   ```
-
-   This will install dependencies, run type checking, build the project, and run tests.
-
-2. **Manual setup**
-
-   ```bash
-   npm install
-   npm run build
-   npm run test:fast
-   ```
-
-3. **Start development server**
-
-   ```bash
-   npm run dev          # Standard development server
-   npm run dev:debug    # Development server with debugger
-   npm run dev:watch    # Development server with type checking
-   ```
-
-4. **Verify installation**
-   ```bash
-   npm run health       # Check project health
-   curl http://localhost:3001/v1/health  # Check API health
-   ```
-
-## Development Scripts
-
-### Core Commands
-
-```bash
-npm run build         # Build for production
-npm run build:verify  # Build with verification
-npm run dev           # Start development server
-npm run start         # Start production server
-npm run typecheck     # Type checking
-npm run health        # Project health check
-```
-
-### Testing Commands
-
-```bash
-npm test              # Run integration tests (primary)
-npm run test:all      # Run comprehensive test suite
-npm run test:fast     # Run fast tests (typecheck + integration)
-npm run test:unit     # Run unit tests only
-npm run test:integration  # Run integration tests only
-npm run test:e2e      # Run end-to-end tests
-npm run test:ci       # Run CI test suite
-```
-
-### Code Quality
-
-```bash
-npm run lint          # Lint TypeScript code
-npm run lint:fix      # Fix linting issues
-npm run format        # Format code with Prettier
-npm run format:check  # Check code formatting
-```
-
-### Maintenance
-
-```bash
-npm run clean         # Clean build artifacts
-npm run clean:all     # Clean all artifacts and caches
-npm run deps:check    # Check for outdated dependencies
-npm run deps:update   # Update dependencies
-```
-
-## API Endpoints
-
-### Track Events
-
-```bash
-curl -X POST http://localhost:3001/v1/track \
-  -H "Content-Type: application/json" \
-  -H "x-tenant-id: tenant1" \
-  -H "x-api-key: demo-api-key-tenant1" \
-  -d '{
-    "event": "user_signup",
-    "userId": "user123",
-    "properties": {
-      "plan": "premium",
-      "source": "web"
-    }
-  }'
-```
-
-### Identify Users
-
-```bash
-curl -X POST http://localhost:3001/v1/identify \
-  -H "Content-Type: application/json" \
-  -H "x-tenant-id: tenant1" \
-  -H "x-api-key: demo-api-key-tenant1" \
-  -d '{
-    "userId": "user123",
-    "traits": {
-      "email": "user@example.com",
-      "name": "John Doe"
-    }
-  }'
-```
-
-### Health Check
-
-```bash
-curl http://localhost:3001/v1/health
-```
-
-## Configuration
-
-The backend is configured via environment variables. See `.env.example` for all available options.
-
-### Storage Backends
-
-#### Phase 0 (Current)
-
-- **Events**: `flatfile` - JSON lines files partitioned by date
-- **Users**: `flatfile` - Individual JSON files per user
-- **Rate Limiting**: `memory` - In-memory sliding window
-- **Deduplication**: `memory` - In-memory LRU cache
-
-#### Phase 1 (Future)
-
-- **Events**: `clickhouse`, `bigquery`
-- **Users**: `postgres`, `dynamodb`
-- **Rate Limiting**: `redis`
-
-### Multi-Environment Support
-
-#### Development
-
-```bash
-NODE_ENV=development
-STORE_EVENTS=flatfile
-STORE_USERS=flatfile
-RATE_LIMIT_MAX=10000
-```
-
-#### Staging
-
-```bash
-NODE_ENV=staging
-STORE_EVENTS=flatfile
-STORE_USERS=flatfile
-RATE_LIMIT_MAX=5000
-```
-
-#### Production
-
-```bash
-NODE_ENV=production
-STORE_EVENTS=clickhouse
-STORE_USERS=postgres
-STORE_RATELIMIT=redis
-RATE_LIMIT_MAX=1000
-```
-
-## Architecture
-
-### Request Flow
-
-1. **Request Router**: Validates JSON schema and extracts tenant info
-2. **Authentication**: Validates JWT tokens or API keys
-3. **Rate Limiting**: Enforces per-tenant rate limits
-4. **Deduplication**: Checks for duplicate events
-5. **Storage**: Persists data via storage adapters
-6. **Response**: Returns success/error with request ID
-
-### Storage Architecture
-
-```
-┌─────────────────────────────────────┐
-│           HTTP Gateway              │
-│  ┌─────────────┐ ┌─────────────────┐│
-│  │   Router    │ │  Auth/RateLimit ││
-│  └─────────────┘ └─────────────────┘│
-└─────────────────────────────────────┘
-                    │
-┌─────────────────────────────────────┐
-│        Storage Abstraction          │
-│  ┌──────────┐ ┌──────────┐ ┌──────┐ │
-│  │ Events   │ │  Users   │ │ Rate │ │
-│  │ Adapter  │ │ Adapter  │ │Limit │ │
-│  └──────────┘ └──────────┘ └──────┘ │
-└─────────────────────────────────────┘
-                    │
-┌─────────────────────────────────────┐
-│          Storage Backends           │
-│  ┌──────────┐ ┌──────────┐ ┌──────┐ │
-│  │FlatFiles │ │ClickHouse│ │Redis │ │
-│  │PostgreSQL│ │ BigQuery │ │Memory│ │
-│  └──────────┘ └──────────┘ └──────┘ │
-└─────────────────────────────────────┘
-```
-
-## Project Structure
+## 🏗️ Architecture
 
 ```
 nodash-dev/
-├── src/                          # Source code
-│   ├── index.ts                  # Application entry point
-│   ├── config/                   # Configuration management
-│   ├── adapters/                 # Storage adapters
-│   ├── handlers/                 # Request handlers
-│   └── utils/                    # Utility functions
-├── test/                         # Test suites
-│   ├── unit/                     # Unit tests (adapters, config)
-│   ├── integration/              # Integration tests (API, workflows)
-│   ├── e2e/                      # End-to-end tests
-│   └── setup.ts                  # Test utilities and setup
-├── scripts/                      # Development scripts
-│   ├── build-verifier.js         # Build validation
-│   ├── test-runner.js            # Advanced test execution
-│   └── dev-utils.js              # Development utilities
-├── dist/                         # Built JavaScript (generated)
-├── coverage/                     # Test coverage reports (generated)
-├── .github/workflows/            # CI/CD pipelines
-├── tsconfig.json                 # TypeScript configuration
-├── tsconfig.build.json           # Production build config
-├── tsconfig.dev.json             # Development config
-├── vitest.config.ts              # Base test configuration
-├── vitest.unit.config.ts         # Unit test configuration
-├── vitest.integration.config.ts  # Integration test configuration
-├── vitest.e2e.config.ts          # E2E test configuration
-└── package.json                  # Dependencies and scripts
+├── services/           # Backend services
+│   └── api-service/   # Core analytics API service
+├── apps/              # Frontend applications
+│   ├── webapp/        # Platform dashboard (planned)
+│   ├── website/       # Marketing website (planned)
+│   └── docs/          # Documentation portal (planned)
+├── packages/          # Shared libraries
+│   └── shared/        # Common utilities and types (planned)
+└── tools/             # Development utilities
+    └── dev-utils/     # Build and development tools (planned)
 ```
 
-## Development Workflow
+## 🚀 Quick Start
 
-### 1. Initial Setup
+### Prerequisites
+
+- Node.js 20.19.0 or higher
+- npm (comes with Node.js)
+
+### Installation
 
 ```bash
-# Clone and setup
-git clone <repository>
+# Clone the repository
+git clone <repository-url>
 cd nodash-dev
-npm run setup
+
+# Install dependencies for all workspaces
+npm install
+
+# Build all services
+npm run build:all
 ```
 
-### 2. Daily Development
+### Development
 
 ```bash
-# Start development with type checking
-npm run dev:watch
+# Run the API service in development mode
+npm run dev:api
 
-# In another terminal, run tests on changes
-npm run test:fast
-
-# Check code quality
-npm run lint
-npm run format:check
-```
-
-### 3. Before Committing
-
-```bash
-# Run comprehensive tests
+# Run tests across all workspaces
 npm run test:all
 
-# Fix any issues
-npm run lint:fix
-npm run format
+# Run linting across all workspaces
+npm run lint:all
 
-# Verify build
-npm run build:verify
+# Format code across all workspaces
+npm run format:all
 ```
 
-### 4. Debugging
+## 📦 Services & Applications
 
+### API Service (`services/api-service`)
+
+The core analytics API service that handles event tracking, user identification, and data querying.
+
+**Features:**
+- Multi-tenant event tracking
+- User identification and profiling
+- Real-time analytics queries
+- Flexible storage adapters (file-based, database)
+- JWT and API key authentication
+- Rate limiting and security middleware
+
+**Quick Commands:**
 ```bash
-# Start with debugger
-npm run dev:debug
+# Development
+npm run dev:api
 
-# Check project health
-npm run health
+# Build
+npm run build:api
 
-# View logs (if configured)
-npm run logs
+# Test
+npm run test:api
 ```
 
-## Testing Strategy
+**Deployment:**
+- Docker support with health checks
+- Render.com configuration included
+- Fly.io configuration included
 
-Our testing approach prioritizes **integration and end-to-end tests** over unit tests, focusing on real-world scenarios and API behavior.
+### Planned Components
 
-### Test Types
+- **Platform Webapp**: React-based dashboard for analytics visualization
+- **Marketing Website**: Next.js-based marketing and documentation site
+- **Documentation Portal**: Comprehensive API and SDK documentation
+- **Shared Libraries**: Common utilities, types, and validation schemas
 
-1. **Integration Tests** (Primary) - `npm run test:integration`
-   - Real API endpoint testing
-   - Database/file system interactions
-   - Multi-tenant scenarios
-   - Authentication flows
+## 🛠️ Development
 
-2. **Unit Tests** (Minimal) - `npm run test:unit`
-   - Storage adapter logic
-   - Configuration validation
-   - Utility functions
+### Workspace Commands
 
-3. **End-to-End Tests** - `npm run test:e2e`
-   - Complete user workflows
-   - Service startup/shutdown
-   - Cross-component integration
-
-### Test Execution
+The monorepo uses npm workspaces for dependency management. All commands can be run from the root:
 
 ```bash
-# Fast feedback loop (recommended for development)
-npm run test:fast
+# Install dependencies for all workspaces
+npm install
 
-# Comprehensive testing (before commits)
+# Build all services and apps
+npm run build:all
+
+# Run tests across all workspaces
 npm run test:all
+npm run test:unit:all
+npm run test:integration:all
 
-# CI pipeline testing
-npm run test:ci
+# Linting and formatting
+npm run lint:all
+npm run lint:fix:all
+npm run format:all
+npm run format:check:all
+
+# Type checking
+npm run typecheck:all
+
+# Clean build artifacts
+npm run clean:all
+```
+
+### Working with Individual Services
+
+```bash
+# Work on a specific service
+cd services/api-service
+npm run dev
+
+# Or use workspace commands from root
+npm run dev --workspace=services/api-service
+```
+
+### Adding New Services
+
+1. Create a new directory in the appropriate folder (`services/`, `apps/`, `packages/`, or `tools/`)
+2. Initialize with `package.json` following the naming convention `@nodash/service-name`
+3. The workspace will automatically be detected and included
+
+## 🧪 Testing
+
+### Test Structure
+
+- **Unit Tests**: Fast, isolated tests for individual components
+- **Integration Tests**: Tests that verify service interactions
+- **E2E Tests**: End-to-end tests for complete user workflows
+
+### Running Tests
+
+```bash
+# All tests across all workspaces
+npm run test:all
 
 # Specific test types
-npm run test:unit
-npm run test:integration
-npm run test:e2e
+npm run test:unit:all
+npm run test:integration:all
+
+# Tests for specific service
+npm run test --workspace=services/api-service
 ```
 
-### Test Utilities
+## 🚀 Deployment
 
-The test suite includes utilities for:
+Each service maintains its own deployment configuration:
 
-- Automatic test data cleanup
-- Tenant and user ID generation
-- Test server management
-- File system verification
-- Concurrent request testing
+### API Service Deployment
 
-## Development
-
-## Deployment
-
-### Render.com (Recommended)
-
+**Docker:**
 ```bash
-# 1. Fork this repository to your GitHub account
-# 2. Visit https://dashboard.render.com
-# 3. Click "New" → "Blueprint"
-# 4. Select this repository
-# 5. Render auto-deploys using render.yaml
-
-# See DEPLOY_RENDER.md for complete guide
+cd services/api-service
+docker build -t nodash-api-service .
+docker run -p 3001:3001 nodash-api-service
 ```
 
-### Fly.io (Alternative)
+**Render.com:**
+- Configuration: `services/api-service/render.yaml`
+- Automatic builds from git pushes
 
-```bash
-# Install Fly CLI and login
-flyctl auth login
+**Fly.io:**
+- Configuration: `services/api-service/fly.toml`
+- Deploy with `fly deploy` from service directory
 
-# Deploy (see deploy.md for full guide)
-flyctl launch
-flyctl volumes create nodash_data --size 1
-flyctl secrets set JWT_SECRET=your-secret
-flyctl deploy
-```
-
-### Docker
-
-```bash
-# Build image
-docker build -t nodash-backend .
-
-# Run container
-docker run -p 3001:3001 \
-  -e STORE_EVENTS=flatfile \
-  -e EVENTS_PATH=/data/events \
-  -v $(pwd)/data:/data \
-  nodash-backend
-```
+## 🔧 Configuration
 
 ### Environment Variables
 
-All configuration is done via environment variables. Required variables:
+Each service manages its own environment configuration. See individual service README files for specific variables.
 
-- `NODE_ENV` - Environment (development/staging/production)
-- `STORE_EVENTS` - Events storage backend
-- `STORE_USERS` - Users storage backend
+### Shared Configuration
 
-## API Reference
+- **TypeScript**: Root `tsconfig.json` provides base configuration
+- **ESLint**: Root `.eslintrc.js` provides linting rules
+- **Prettier**: Root `.prettierrc` provides formatting rules
 
-### Authentication
+## 📚 Documentation
 
-All endpoints (except `/v1/health`) require authentication via:
+- **API Documentation**: Available in each service directory
+- **Architecture Decisions**: Documented in service-specific README files
+- **Deployment Guides**: Available in service directories
 
-- **API Key**: `x-api-key: your-api-key`
-- **JWT Token**: `Authorization: Bearer your-jwt-token`
+## 🤝 Contributing
 
-### Tenant Isolation
+1. **Code Style**: Follow the established TypeScript and formatting conventions
+2. **Testing**: Ensure all tests pass before submitting changes
+3. **Documentation**: Update README files when adding new features
+4. **Commits**: Use clear, descriptive commit messages
 
-All requests must include tenant identification:
+### Development Workflow
 
-- **Header**: `x-tenant-id: your-tenant-id`
+```bash
+# 1. Install dependencies
+npm install
 
-### Rate Limiting
+# 2. Make your changes
+# ... edit code ...
 
-Rate limits are enforced per (tenant, IP, user) combination:
+# 3. Run tests and linting
+npm run test:all
+npm run lint:all
 
-- **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
-- **Response**: HTTP 429 with `Retry-After` header
+# 4. Format code
+npm run format:all
 
-### Error Responses
-
-```json
-{
-  "error": "Error Type",
-  "message": "Detailed error message",
-  "statusCode": 400,
-  "timestamp": "2025-01-01T00:00:00.000Z",
-  "requestId": "uuid-request-id"
-}
+# 5. Build to ensure everything compiles
+npm run build:all
 ```
 
-## Security
+## 📄 License
 
-- **HTTPS Only**: TLS 1.3 enforced in production
-- **CORS**: Configurable origins
-- **Rate Limiting**: Prevents abuse
-- **Input Validation**: Strict JSON schema validation
-- **Error Handling**: No sensitive data in error responses
+MIT License - see individual service directories for specific license information.
 
-## Monitoring
+## 🔗 Links
 
-### Health Checks
+- **API Service**: `services/api-service/README.md`
+- **Deployment Guides**: Available in each service directory
+- **Architecture Documentation**: See service-specific documentation
 
-- **Endpoint**: `GET /v1/health`
-- **Dependencies**: Event store, user store, rate limiter
-- **Status**: `healthy`, `degraded`, `unhealthy`
+---
 
-### Logging
-
-- **Format**: Structured JSON logs
-- **Context**: Request ID, tenant ID, user ID
-- **Levels**: ERROR, WARN, INFO, DEBUG
-
-## License
-
-MIT
+**Note**: This is a monorepo in active development. Some services and applications are planned for future implementation and are currently represented as placeholder directories with documentation.
