@@ -12,17 +12,22 @@ import { IdentifyHandler } from './handlers/identify-handler.js';
 import { HealthHandler } from './handlers/health-handler.js';
 import { QueryHandler } from './handlers/query-handler.js';
 import { QueryService } from './services/query-service.js';
+import { createDefaultSwaggerConfig } from './swagger/swagger-config.js';
 
 class NodashBackend {
   private app: express.Application;
   private config: any;
   private storeSelector: AdapterStoreSelector;
   private server: any;
+  private swaggerConfig: any;
 
   constructor() {
     this.app = express();
     this.config = ConfigLoader.load();
     this.storeSelector = new AdapterStoreSelector(this.config);
+
+    // Initialize Swagger configuration
+    this.swaggerConfig = createDefaultSwaggerConfig(this.config.environment);
   }
 
   async initialize(): Promise<void> {
@@ -174,6 +179,19 @@ class NodashBackend {
       (req, res) => identifyHandler.handle(req, res)
     );
 
+    // Swagger documentation endpoints
+    const swaggerMiddleware = this.swaggerConfig.createSwaggerMiddleware();
+
+    // Serve Swagger UI
+    this.app.use('/api-docs', swaggerMiddleware.serve);
+    this.app.get('/api-docs', swaggerMiddleware.setup);
+
+    // Serve OpenAPI specification in JSON format
+    this.app.get('/api-docs/json', swaggerMiddleware.jsonSpec);
+
+    // Serve OpenAPI specification in YAML format
+    this.app.get('/api-docs/yaml', swaggerMiddleware.yamlSpec);
+
     // Root endpoint
     this.app.get('/', (req, res) => {
       res.json({
@@ -187,7 +205,11 @@ class NodashBackend {
           queryEvents: 'GET /v1/events/query',
           queryUsers: 'GET /v1/users/query',
         },
-        documentation: 'https://docs.nodash.ai',
+        documentation: '/api-docs',
+        openapi: {
+          json: '/api-docs/json',
+          yaml: '/api-docs/yaml',
+        },
         timestamp: new Date(),
       });
     });

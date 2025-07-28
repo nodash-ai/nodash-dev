@@ -9,7 +9,7 @@ export default defineConfig({
     hookTimeout: 5000,
     teardownTimeout: 5000,
     setupFiles: ['./test/setup.ts'],
-    include: ['test/adapters/**/*.test.ts', 'test/config/**/*.test.ts'],
+    include: ['test/adapters/**/*.test.ts', 'test/config/**/*.test.ts', 'test/unit/**/*.test.ts'],
     env: {
       NODE_ENV: 'test',
     },
