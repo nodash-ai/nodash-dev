@@ -153,12 +153,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build API service before testing
+        run: npm run build --workspace=services/api-service
+
       - name: Run comprehensive test suite for API service
         run: npm run test:ci --workspace=services/api-service
         if: hashFiles('services/api-service/test-runner.js') != ''
 
       - name: Fallback comprehensive tests
-        run: npm run ci --workspace=services/api-service
+        run: |
+          npm run build --workspace=services/api-service
+          npm run ci --workspace=services/api-service
         if: hashFiles('services/api-service/test-runner.js') == ''
 
       - name: Generate test report
