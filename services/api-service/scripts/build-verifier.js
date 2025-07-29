@@ -12,6 +12,8 @@ class BuildVerifier {
   constructor() {
     this.results = [];
     this.startTime = Date.now();
+    // Set the service directory as the working directory
+    this.serviceDir = path.resolve(__dirname, '..');
   }
 
   async runCommand(command, args, cwd, description) {
@@ -21,7 +23,7 @@ class BuildVerifier {
       const child = spawn(command, args, {
         stdio: 'inherit',
         shell: true,
-        cwd: cwd || process.cwd(),
+        cwd: cwd || this.serviceDir,
       });
 
       const startTime = Date.now();
@@ -35,7 +37,7 @@ class BuildVerifier {
           success,
           duration,
           code,
-          cwd: cwd || process.cwd(),
+          cwd: cwd || this.serviceDir,
         });
 
         if (success) {
@@ -54,7 +56,7 @@ class BuildVerifier {
           success: false,
           duration: Date.now() - startTime,
           error: error.message,
-          cwd: cwd || process.cwd(),
+          cwd: cwd || this.serviceDir,
         });
         resolve(false);
       });
@@ -64,8 +66,8 @@ class BuildVerifier {
   async verifyServiceExports() {
     console.log(`\n📦 Verifying service exports...`);
 
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
-    const distPath = path.join(process.cwd(), 'dist');
+    const packageJsonPath = path.join(this.serviceDir, 'package.json');
+    const distPath = path.join(this.serviceDir, 'dist');
 
     if (!fs.existsSync(packageJsonPath)) {
       console.log(`❌ package.json not found`);
@@ -85,7 +87,7 @@ class BuildVerifier {
 
     // Check main export
     if (main) {
-      const mainPath = path.join(process.cwd(), main);
+      const mainPath = path.join(this.serviceDir, main);
       if (!fs.existsSync(mainPath)) {
         console.log(`❌ Main export not found: ${main}`);
         allExportsExist = false;
@@ -97,7 +99,7 @@ class BuildVerifier {
     // Check bin exports
     if (bin && typeof bin === 'object') {
       for (const [binName, binPath] of Object.entries(bin)) {
-        const fullBinPath = path.join(process.cwd(), binPath);
+        const fullBinPath = path.join(this.serviceDir, binPath);
         if (!fs.existsSync(fullBinPath)) {
           console.log(`❌ Binary export not found: ${binName} -> ${binPath}`);
           allExportsExist = false;
@@ -119,7 +121,7 @@ class BuildVerifier {
     const cleanSuccess = await this.runCommand(
       'npm',
       ['run', 'clean'],
-      process.cwd(),
+      this.serviceDir,
       'Clean build artifacts'
     );
 
@@ -127,8 +129,9 @@ class BuildVerifier {
       // If clean script doesn't exist, manually clean
       console.log('⏭️  No clean script found, manually cleaning dist/');
       try {
-        if (fs.existsSync('dist')) {
-          fs.rmSync('dist', { recursive: true, force: true });
+        const distPath = path.join(this.serviceDir, 'dist');
+        if (fs.existsSync(distPath)) {
+          fs.rmSync(distPath, { recursive: true, force: true });
           console.log('✅ Manually cleaned dist directory');
         }
       } catch (error) {
@@ -139,8 +142,9 @@ class BuildVerifier {
 
     // 2. Build the service (only if dist doesn't exist)
     let buildSuccess = true;
-    if (!fs.existsSync('dist')) {
-      buildSuccess = await this.runCommand('npx', ['tsc'], process.cwd(), 'Build service');
+    const distPath = path.join(this.serviceDir, 'dist');
+    if (!fs.existsSync(distPath)) {
+      buildSuccess = await this.runCommand('npx', ['tsc'], this.serviceDir, 'Build service');
     } else {
       console.log('✅ Build artifacts already exist, skipping build');
     }
@@ -166,7 +170,7 @@ class BuildVerifier {
     const typecheckSuccess = await this.runCommand(
       'npm',
       ['run', 'typecheck'],
-      process.cwd(),
+      this.serviceDir,
       'TypeScript type checking'
     );
 
@@ -176,7 +180,7 @@ class BuildVerifier {
 
     // 5. Validate package.json
     console.log('\n📋 Validating package.json...');
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const packageJsonPath = path.join(this.serviceDir, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
@@ -219,7 +223,7 @@ class BuildVerifier {
       const syntaxTest = await this.runCommand(
         'node',
         ['-c', 'dist/index.js'],
-        process.cwd(),
+        this.serviceDir,
         'Service syntax validation'
       );
 
