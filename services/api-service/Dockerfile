@@ -7,11 +7,11 @@ RUN apk add --no-cache curl
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files  
+COPY package.json ./
 
-# Install ALL dependencies for build
-RUN npm ci
+# Install ALL dependencies for build (using npm install for workspace compatibility)
+RUN npm install --production=false
 
 # Copy source code
 COPY . .
