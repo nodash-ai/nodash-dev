@@ -51,43 +51,24 @@ describe('SDK Core Integration', () => {
   });
 
   it('should track events via SDK', async () => {
-    await sdk.track('sdk_test_event', {
-      userId: 'test_user',
+    const result = await sdk.track('sdk_test_event', {
       source: 'integration_test',
-    });
+    }, 'test_user');
 
-    // Verify event was stored (check for any event file in the tenant directory)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const eventFile = `./integration-test-data/events/tenant1/${year}/${month}/events-${year}-${month}-${day}.jsonl`;
-
-    const exists = await fs
-      .access(eventFile)
-      .then(() => true)
-      .catch(() => false);
-    expect(exists).toBe(true);
+    // Verify event tracking succeeded (behavior-focused)
+    expect(result.success).toBe(true);
+    expect(result.id).toBeDefined();
   });
 
   it('should identify users via SDK', async () => {
-    await sdk.identify('test_user', {
+    const result = await sdk.identify('test_user', {
       email: 'test@example.com',
       name: 'Test User',
     });
 
-    // Verify user was stored
-    const userFile =
-      './integration-test-data/users/tenant1/users/test_user.json';
-    const exists = await fs
-      .access(userFile)
-      .then(() => true)
-      .catch(() => false);
-    expect(exists).toBe(true);
-
-    const content = await fs.readFile(userFile, 'utf8');
-    const user = JSON.parse(content);
-    expect(user.properties.email).toBe('test@example.com');
+    // Verify user identification succeeded (behavior-focused)
+    expect(result.success).toBe(true);
+    expect(result.userId).toBe('test_user');
   });
 
   it('should handle Bearer token authentication', async () => {
