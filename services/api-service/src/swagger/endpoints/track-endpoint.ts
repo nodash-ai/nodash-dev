@@ -114,7 +114,7 @@ export function createTrackEndpointDocumentation(): EndpointDocumentation {
         },
       },
     ],
-    security: [{ bearerAuth: [] }],
+    security: [{ bearerAuth: [] }, { apiKey: [] }],
   };
 }
 

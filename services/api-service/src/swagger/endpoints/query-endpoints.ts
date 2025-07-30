@@ -434,7 +434,7 @@ Export event data in CSV format for external analysis.
         },
       },
     ],
-    security: [{ bearerAuth: [] }],
+    security: [{ bearerAuth: [] }, { apiKey: [] }],
   };
 }
 
@@ -770,7 +770,7 @@ Find users active within specific time periods.
         },
       },
     ],
-    security: [{ bearerAuth: [] }],
+    security: [{ bearerAuth: [] }, { apiKey: [] }],
   };
 }
 

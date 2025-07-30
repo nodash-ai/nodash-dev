@@ -325,7 +325,7 @@ Track changes in user status, plan upgrades, etc.
         },
       },
     ],
-    security: [{ bearerAuth: [] }],
+    security: [{ bearerAuth: [] }, { apiKey: [] }],
   };
 }
 
