@@ -4,18 +4,105 @@ A scalable, multi-tenant analytics platform built with Node.js and TypeScript. T
 
 ## 🏗️ Architecture
 
+### Monorepo Structure
+
 ```
 nodash-dev/
 ├── services/           # Backend services
 │   └── api-service/   # Core analytics API service
-├── apps/              # Frontend applications
-│   ├── webapp/        # Platform dashboard (planned)
-│   ├── website/       # Marketing website (planned)
-│   └── docs/          # Documentation portal (planned)
-├── packages/          # Shared libraries
-│   └── shared/        # Common utilities and types (planned)
-└── tools/             # Development utilities
-    └── dev-utils/     # Build and development tools (planned)
+├── apps/              # Frontend applications (future)
+├── packages/          # Shared libraries (future)
+└── tools/             # Development utilities (future)
+```
+
+### Service Architecture
+
+```mermaid
+graph TD
+    A[Client SDKs] --> B[Load Balancer]
+    C[CLI Tools] --> B
+    D[MCP Agents] --> B
+    
+    B --> E[API Service]
+    E --> F[Authentication Middleware]
+    E --> G[Rate Limiting]
+    E --> H[Request Validation]
+    
+    E --> I[Event Processing]
+    E --> J[User Management]
+    E --> K[Analytics Engine]
+    
+    I --> L[Event Storage]
+    J --> M[User Storage]
+    K --> N[Analytics Storage]
+    
+    O[Health Monitoring] --> E
+    P[Logging System] --> E
+    Q[Metrics Collection] --> E
+```
+
+### Multi-tenant Data Architecture
+
+```mermaid
+graph TD
+    A[API Request] --> B[Tenant Extraction]
+    B --> C[Authentication]
+    C --> D[Authorization]
+    
+    D --> E[Tenant Context]
+    E --> F[Data Layer]
+    
+    F --> G[Tenant A Data]
+    F --> H[Tenant B Data]
+    F --> I[Tenant C Data]
+    
+    J[Shared Infrastructure]
+    G --> J
+    H --> J
+    I --> J
+    
+    K[Backup System] --> J
+    L[Monitoring] --> J
+    M[Security Audit] --> J
+```
+
+### Deployment Architecture
+
+**Development Environment:**
+```
+┌─────────────────┐
+│ Local Dev Setup │
+├─────────────────┤
+│ • API Service   │
+│ • File Storage  │
+│ • In-memory DB  │
+│ • Hot Reload    │
+└─────────────────┘
+```
+
+**Staging Environment:**
+```
+┌─────────────────┐
+│ Staging Deploy  │
+├─────────────────┤
+│ • Docker        │
+│ • PostgreSQL    │
+│ • Redis Cache   │
+│ • Load Testing  │
+└─────────────────┘
+```
+
+**Production Environment:**
+```
+┌─────────────────┐
+│ Production      │
+├─────────────────┤
+│ • Kubernetes    │
+│ • HA Database   │
+│ • CDN           │
+│ • Auto-scaling  │
+│ • Monitoring    │
+└─────────────────┘
 ```
 
 ## 🚀 Quick Start
@@ -86,12 +173,7 @@ npm run test:api
 - Render.com configuration included
 - Fly.io configuration included
 
-### Planned Components
 
-- **Platform Webapp**: React-based dashboard for analytics visualization
-- **Marketing Website**: Next.js-based marketing and documentation site
-- **Documentation Portal**: Comprehensive API and SDK documentation
-- **Shared Libraries**: Common utilities, types, and validation schemas
 
 ## 🛠️ Development
 
@@ -240,5 +322,3 @@ MIT License - see individual service directories for specific license informatio
 - **Architecture Documentation**: See service-specific documentation
 
 ---
-
-**Note**: This is a monorepo in active development. Some services and applications are planned for future implementation and are currently represented as placeholder directories with documentation.
