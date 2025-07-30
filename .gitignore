@@ -34,7 +34,6 @@ Thumbs.db
 **/.env.local
 
 # Nodash data directories
-.nodash/ 
 data/
 integration-test-data/
 **/data/
