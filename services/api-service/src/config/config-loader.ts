@@ -15,6 +15,8 @@ export class ConfigLoader {
       apiKeyHeader: process.env.API_KEY_HEADER || 'x-api-key',
       corsOrigins: process.env.CORS_ORIGINS?.split(',') || ['*'],
 
+      // Simple JWT authentication - no complex OAuth configuration needed
+
       // Storage configuration
       stores: {
         events: (process.env.STORE_EVENTS as StorageType) || 'flatfile',
@@ -127,6 +129,11 @@ export class ConfigLoader {
       errors.push(
         `Invalid environment: ${config.environment}. Must be one of: ${validEnvironments.join(', ')}`
       );
+    }
+
+    // Simple JWT authentication - just warn if JWT_SECRET not provided
+    if (!config.jwtSecret) {
+      console.warn('⚠️  JWT_SECRET not provided - authentication will be disabled');
     }
 
     if (errors.length > 0) {

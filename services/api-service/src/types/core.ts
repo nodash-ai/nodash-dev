@@ -252,6 +252,8 @@ export interface Config {
   apiKeyHeader: string;
   corsOrigins: string[];
 
+  // Simple JWT authentication - no complex OAuth configuration needed
+
   // Storage configuration
   stores: {
     events: StorageType;

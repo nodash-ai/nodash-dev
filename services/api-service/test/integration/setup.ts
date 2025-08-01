@@ -34,6 +34,7 @@ async function startIntegrationServer(): Promise<void> {
         RATE_LIMIT_WINDOW: '60',
         API_KEY_HEADER: 'x-api-key',
         CORS_ORIGINS: '*',
+        // Don't set JWT_SECRET to keep authentication disabled for integration tests
       },
     });
 
@@ -100,6 +101,8 @@ beforeAll(async () => {
   process.env.RATE_LIMIT_WINDOW = '60';
   process.env.API_KEY_HEADER = 'x-api-key';
   process.env.CORS_ORIGINS = '*';
+  // Disable JWT authentication for integration tests to test existing functionality
+  delete process.env.JWT_SECRET;
 
   // Create integration test data directories
   await fs.mkdir(INTEGRATION_DATA_DIR, { recursive: true });

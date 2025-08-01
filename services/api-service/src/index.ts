@@ -13,6 +13,8 @@ import { HealthHandler } from './handlers/health-handler.js';
 import { QueryHandler } from './handlers/query-handler.js';
 import { QueryService } from './services/query-service.js';
 import { createDefaultSwaggerConfig } from './swagger/swagger-config.js';
+import { requireAuth } from './auth/simple-jwt-middleware.js';
+import { exchangeApiKeyForJWT } from './auth/token-exchange.js';
 
 class NodashBackend {
   private app: express.Application;
@@ -20,6 +22,7 @@ class NodashBackend {
   private storeSelector: AdapterStoreSelector;
   private server: any;
   private swaggerConfig: any;
+
 
   constructor() {
     this.app = express();
@@ -38,6 +41,8 @@ class NodashBackend {
     // Initialize storage adapters
     await this.storeSelector.initialize();
 
+    // Authentication is now handled by simple middleware - no initialization needed
+
     // Setup middleware
     this.setupMiddleware();
 
@@ -49,6 +54,8 @@ class NodashBackend {
 
     console.log('✅ Backend initialization complete');
   }
+
+
 
   private setupMiddleware(): void {
     // Security middleware
@@ -105,7 +112,7 @@ class NodashBackend {
     const queryHandler = new QueryHandler(queryService);
 
     // Middleware pipeline
-    const authMiddleware = authRateLimiter.createAuthMiddleware();
+    const authMiddleware = process.env.JWT_SECRET ? requireAuth : authRateLimiter.createAuthMiddleware();
     const rateLimitMiddleware = authRateLimiter.createRateLimitMiddleware();
 
     // Health endpoint (no auth required)
@@ -192,19 +199,32 @@ class NodashBackend {
     // Serve OpenAPI specification in YAML format
     this.app.get('/api-docs/yaml', swaggerMiddleware.yamlSpec);
 
+    // Simple JWT authentication endpoints
+    this.app.post('/auth/token', exchangeApiKeyForJWT);
+
     // Root endpoint
     this.app.get('/', (req, res) => {
+      const endpoints: any = {
+        health: '/v1/health',
+        track: 'POST /v1/track',
+        identify: 'POST /v1/identify',
+        queryEvents: 'GET /v1/events/query',
+        queryUsers: 'GET /v1/users/query',
+      };
+
+      // Add auth endpoints if JWT is enabled
+      if (process.env.JWT_SECRET) {
+        endpoints.auth = {
+          token: 'POST /auth/token - Exchange API key for JWT token'
+        };
+      }
+
       res.json({
         name: 'Nodash Analytics Backend',
         version: '1.0.0',
         environment: this.config.environment,
-        endpoints: {
-          health: '/v1/health',
-          track: 'POST /v1/track',
-          identify: 'POST /v1/identify',
-          queryEvents: 'GET /v1/events/query',
-          queryUsers: 'GET /v1/users/query',
-        },
+        authMode: process.env.JWT_SECRET ? 'jwt' : 'disabled',
+        endpoints,
         documentation: '/api-docs',
         openapi: {
           json: '/api-docs/json',
